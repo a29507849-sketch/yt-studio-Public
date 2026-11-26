@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>유튜브 재창조 스튜디오 v3.1 — Claude 자동화</title>
+<title>재창조 스튜디오 v4</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nanum+Gothic+Coding:wght@700&family=Nanum+Myeongjo:wght@700;800&display=swap">
 <style>
@@ -1994,6 +1994,80 @@ if (typeof module === "object" && typeof module.exports === "object") Object.ass
 </script>
 </head>
 <body>
+<style>
+#app{min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:0 20px 60px;background:radial-gradient(1200px 500px at 50% -10%,#2a2410 0%,#0e0f13 60%)}
+#app .top{width:100%;max-width:760px;display:flex;align-items:center;justify-content:space-between;padding:22px 0 10px}
+#app .brand{font-weight:800;font-size:17px;letter-spacing:-.2px}
+#app .brand small{color:var(--mut);font-weight:600;margin-left:8px;font-size:12px}
+#app .gear{background:none;border:1px solid var(--line);border-radius:50%;width:40px;height:40px;padding:0;font-size:18px}
+#app h1.hero{font-size:30px;line-height:1.25;text-align:center;margin:46px 0 10px;font-weight:800;letter-spacing:-.6px}
+#app p.sub{color:var(--mut);text-align:center;margin:0 0 26px}
+#app .bar{width:100%;max-width:760px;display:flex;gap:10px;background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:10px}
+#app .bar input{flex:1;font-size:16px;border:none;background:transparent;padding:12px 10px}
+#app .bar input:focus{outline:none}
+#app .bar button{font-size:15px;padding:12px 20px;border-radius:12px}
+#app .go{background:var(--ac);color:#000;border-color:var(--ac);font-weight:800}
+#app .ssam{background:#1d2b3a;border-color:#2f4a66;color:#cfe6ff}
+#app .card{width:100%;max-width:760px;background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:18px;margin-top:16px}
+#app .steps{list-style:none;margin:0;padding:0}
+#app .steps li{display:grid;grid-template-columns:28px 120px 1fr;gap:10px;align-items:center;padding:9px 2px;border-bottom:1px dashed var(--line);font-size:14px}
+#app .steps li:last-child{border-bottom:none}
+#app .steps .ic{width:22px;height:22px;border-radius:50%;border:2px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800}
+#app .steps li.run .ic{border-color:var(--ac);border-top-color:transparent;animation:spin .8s linear infinite}
+#app .steps li.ok .ic{background:var(--ok);border-color:var(--ok);color:#000}
+#app .steps li.warn .ic{background:var(--warn);border-color:var(--warn);color:#000}
+#app .steps li.err .ic{background:var(--bad);border-color:var(--bad);color:#000}
+#app .steps .role{font-weight:700}
+#app .steps .msg{color:var(--mut);font-size:13px}
+#app .steps li.run .msg{color:var(--tx)}
+@keyframes spin{to{transform:rotate(360deg)}}
+#app .pbar{height:6px;background:var(--panel2);border-radius:4px;overflow:hidden;margin-top:12px}
+#app .pbar i{display:block;height:100%;width:0;background:var(--ac);transition:width .3s}
+#app .result{display:grid;grid-template-columns:240px 1fr;gap:18px;align-items:start}
+#app .result video{width:100%;border-radius:12px;background:#000}
+#app .result h3{margin:0 0 6px;font-size:17px}
+#app .result .meta{color:var(--mut);font-size:13px;line-height:1.7}
+#app .result ul{margin:6px 0 0;padding-left:18px;font-size:13px;line-height:1.7}
+#app .result .chk{color:var(--warn)}
+#app .err{color:var(--bad);font-size:14px;line-height:1.6}
+#app .cmd{width:100%;min-height:90px;font-size:12px;margin-top:8px}
+@media(max-width:640px){#app h1.hero{font-size:24px}#app .bar{flex-wrap:wrap}#app .bar input{flex-basis:100%}#app .bar button{flex:1}#app .result{grid-template-columns:1fr}#app .steps li{grid-template-columns:28px 92px 1fr}}
+</style>
+<div id="app">
+  <div class="top">
+    <div class="brand">🎬 재창조 스튜디오<small>v4</small></div>
+    <button class="gear" id="vGear" title="설정">⚙</button>
+  </div>
+  <h1 class="hero">유튜브 주소 하나로,<br>더 몰입되는 영상을 다시 만듭니다</h1>
+  <p class="sub">분석 · 대본 · 검수 · 음성 · 이미지 · 렌더까지 자동</p>
+  <div class="bar">
+    <input id="vUrl" placeholder="유튜브 주소를 붙여넣으세요" autocomplete="off">
+    <button class="go" id="vGo">생성하기</button>
+    <button class="ssam" id="vSsam" disabled>쌤컷 편집</button>
+  </div>
+  <div class="card hide" id="vProg">
+    <ul class="steps" id="vSteps"></ul>
+    <div class="pbar"><i id="vBar"></i></div>
+  </div>
+  <div class="card hide" id="vResult"></div>
+</div>
+<div class="modal hide" id="vSet"><div class="box" style="width:min(520px,94vw)">
+  <div class="row"><h2 style="margin:0">설정</h2><button class="auto" id="vSetClose">닫기</button></div>
+  <label>Gemini API 키 (처음 한 번 · 이 브라우저에만 저장)</label>
+  <input id="vKey" type="password" placeholder="AQ.… 또는 AIza…" autocomplete="off">
+  <div class="row">
+    <div><label>컨셉</label><select id="vConcept"><option value="auto">자동 판정</option><option value="moving">감동 실화</option><option value="rise">역경 극복</option><option value="mystery">미제사건</option></select></div>
+    <div><label>포맷</label><select id="vFormat"><option value="auto">원본과 동일</option><option value="short">쇼츠</option><option value="long">롱폼</option></select></div>
+  </div>
+  <div class="row">
+    <div><label>배경 이미지</label><select id="vImg"><option value="auto">AI → 위키미디어 → 컨셉 아트</option><option value="wiki">위키미디어만</option><option value="art">컨셉 아트만</option></select></div>
+    <div><label>목소리 (비우면 컨셉 기본)</label><input id="vVoice" placeholder="Charon, Kore, Sulafat…"></div>
+  </div>
+  <div class="hint" id="vDiag" style="margin-top:12px;font-size:13px;line-height:1.7"></div>
+  <div class="row" style="margin-top:14px"><button class="pri auto" id="vSetSave">저장</button><button class="auto" id="vDiagBtn">연결 진단</button><button class="auto" id="vTest">음성 테스트</button><button class="auto" id="vAdv">고급 편집 화면</button></div>
+</div></div>
+
+<div id="legacy" class="hide">
 <header>
   <h1>🎬 재창조 스튜디오 v3.1</h1>
   <div class="tabs" id="tabs">
@@ -2004,6 +2078,7 @@ if (typeof module === "object" && typeof module.exports === "object") Object.ass
     <div class="tab" data-t="pack"><span class="n">5</span>업로드·쌤컷</div>
   </div>
   <div style="margin-left:auto" class="row">
+    <button class="auto" id="btnBack">← 간단 화면</button>
     <button class="auto" id="btnSave">프로젝트 저장</button>
     <button class="auto" id="btnLoad">불러오기</button>
     <input type="file" id="fileLoad" accept=".json" class="hide">
@@ -2178,6 +2253,7 @@ if (typeof module === "object" && typeof module.exports === "object") Object.ass
     <div class="row" style="margin-top:4px"><span class="hint" id="timeLbl">0.0s / 0.0s</span></div>
   </div>
 </aside>
+</div>
 </div>
 
 <div id="toast"></div>
@@ -2998,10 +3074,11 @@ async function ttsText(line,onWait){
     let r,j={};
     try{r=await gfetch(model,{contents:[{parts:[{text}]}],generationConfig:{responseModalities:['AUDIO'],speechConfig:{voiceConfig:{prebuiltVoiceConfig:{voiceName:voice}}}}});
       j=await r.json().catch(()=>({}));}catch(e){r={ok:false,status:0};}
+    if(!r.ok&&/limit:\s*0/.test((j.error&&j.error.message)||''))throw diag(r.status,j.error.message,'tts');
     if(!r.ok&&(r.status===429||r.status>=500||r.status===0)){const w=Math.min(65,retrySec(j)||6*2**attempt);if(onWait)onWait(w);await sleep(w*1000);continue;}
-    if(!r.ok)throw new Error('TTS '+r.status+': '+(j.error&&j.error.message||'')+(r.status===401?' — AI Studio에서 키를 새로 만들어 다시 넣어보세요':''));
+    if(!r.ok)throw diag(r.status,(j.error&&j.error.message)||'','tts');
     const part=(j.candidates&&j.candidates[0]&&j.candidates[0].content&&j.candidates[0].content.parts||[]).find(p=>p.inlineData);
-    if(!part)throw new Error('TTS 응답에 오디오가 없습니다 (모델명 확인)');
+    if(!part)throw new GErr('음성 모델이 오디오를 돌려주지 않았습니다.','⚙ 설정 → 연결 진단을 누르면 사용 가능한 음성 모델로 교체됩니다.',JSON.stringify(j).slice(0,200));
     const mime=part.inlineData.mimeType||'';const bytes=b64ToBytes(part.inlineData.data);
     if(/wav|mpeg|mp3|ogg|webm/.test(mime))return await AC().decodeAudioData(bytes.buffer.slice(0));
     return pcmToBuffer(bytes,+((mime.match(/rate=(\d+)/)||[])[1]||24000));
@@ -3104,7 +3181,7 @@ async function autoRun(opts={}){
 }
 $('#btnAutoRun').onclick=()=>autoRun();
 window.STUDIO=Object.freeze({
-  version:'3.0',
+  version:'4.0',
   ready(){return {geminiKey:!!$('#inGKey').value.trim(),imageMode:$('#inImgMode').value,aiImage:aiImgDisabled?('불가: '+aiImgReason):'미확인/가능',ttsModel:$('#inTModel').value,webcodecs:'VideoEncoder' in window,muxer:!!window.Mp4Muxer,concepts:Object.keys(CONCEPTS),busy:!RUN.done&&RUN.stage!=='idle'};},
   load(plan,opts={}){
     if(opts.concept&&CONCEPTS[opts.concept])setConcept(opts.concept);
@@ -3138,6 +3215,311 @@ window.STUDIO=Object.freeze({
   abort(){abortFlag=true;return 'aborting';}
 });
 
+/* ================= v4.1: 모델 자동 탐색 · 오류 진단 ================= */
+const GBASE='https://generativelanguage.googleapis.com/v1beta';
+let MODELS=null;
+class GErr extends Error{constructor(cause,fix,raw,code){super(cause);this.cause2=cause;this.fix=fix;this.raw=raw||'';this.code=code||0;}}
+function diag(status,msg,ctx){
+  const m=String(msg||'');
+  if(status===0)return new GErr('인터넷 연결 또는 차단 문제로 Gemini 서버에 닿지 못했습니다.','광고 차단 확장 프로그램을 끄거나, 회사·학교 네트워크라면 다른 네트워크에서 시도하세요.',m,0);
+  if(/API key not valid|API_KEY_INVALID/i.test(m))return new GErr('API 키가 올바르지 않습니다.','AI Studio(aistudio.google.com/apikey)에서 키를 다시 복사해 설정에 붙여넣으세요. 앞뒤 공백·줄바꿈이 섞이면 실패합니다.',m,status);
+  if(/ACCESS_TOKEN_TYPE_UNSUPPORTED|Expected OAuth 2 access token/i.test(m))return new GErr('새 형식(AQ.) 키를 Gemini가 받아주지 않았습니다.','AI Studio에서 키를 삭제 후 새로 만들어 다시 넣으세요. 계속되면 키가 속한 Google Cloud 프로젝트에서 "Generative Language API"가 사용 설정돼 있는지 확인하세요.',m,status);
+  if(/has not been used|is disabled|SERVICE_DISABLED/i.test(m))return new GErr('키가 속한 프로젝트에서 Gemini API가 꺼져 있습니다.','AI Studio에서 "새 프로젝트에 키 만들기"로 키를 다시 만들면 자동으로 켜집니다.',m,status);
+  if(/location is not supported|User location/i.test(m))return new GErr('현재 접속 지역에서 Gemini API를 쓸 수 없다고 응답했습니다.','VPN을 끄고 다시 시도하세요.',m,status);
+  if(/limit:\s*0/.test(m))return new GErr('이 모델은 무료 등급에서 쓸 수 없습니다.','엔진이 다른 모델로 자동 전환합니다. 모든 모델이 막혔다면 AI Studio에서 결제(요금제)를 연결해야 합니다.',m,status);
+  if(status===429)return new GErr('무료 사용 한도를 다 썼습니다.','1~2분 뒤 다시 누르세요. 하루 한도를 넘었다면 내일 다시 시도하거나 결제를 연결하세요.',m,status);
+  if(ctx==='video'&&(status===400||status===403||status===404))return new GErr('원본 영상을 Gemini가 열지 못했습니다.','공개 영상인지 확인하세요(일부공개·비공개·연령 제한·멤버십·라이브 중 영상은 안 됩니다). 너무 긴 영상(대략 1시간 이상)도 무료 등급에서 실패할 수 있습니다.',m,status);
+  if(status===404)return new GErr('요청한 모델을 찾지 못했습니다.','설정 → 연결 진단을 누르면 사용 가능한 모델로 자동 교체됩니다.',m,status);
+  if(status>=500)return new GErr('Gemini 서버가 일시적으로 응답하지 않습니다.','잠시 후 다시 누르세요.',m,status);
+  return new GErr('Gemini 요청이 거절됐습니다 ('+status+').','아래 원문 오류를 Claude에게 보여주세요.',m,status);
+}
+async function listModels(force){
+  if(MODELS&&!force)return MODELS;
+  const key=$('#inGKey').value.trim();if(!key)throw new GErr('Gemini API 키가 없습니다.','⚙ 설정에서 키를 넣어주세요.');
+  let r,j={};
+  try{r=await fetch(`${GBASE}/models?pageSize=200`,{headers:{'x-goog-api-key':key}});
+    if(r.status===401||r.status===403)r=await fetch(`${GBASE}/models?pageSize=200&key=${encodeURIComponent(key)}`);
+    j=await r.json().catch(()=>({}));}catch(e){throw diag(0,e.message);}
+  if(!r.ok)throw diag(r.status,j.error&&j.error.message);
+  MODELS=(j.models||[]).filter(m=>(m.supportedGenerationMethods||[]).includes('generateContent')).map(m=>m.name.replace(/^models\//,''));
+  if(!MODELS.length)throw new GErr('이 키로 쓸 수 있는 Gemini 모델이 없습니다.','AI Studio에서 키를 새 프로젝트로 다시 만드세요.');
+  return MODELS;
+}
+function ver(n){const m=n.match(/(\d+(?:\.\d+)?)/);return m?parseFloat(m[1]):0;}
+function rankModels(ms,kind){
+  const bad=/embedding|aqa|imagen|veo|live|native-audio|computer|robotics|learnlm|gemma/i;
+  let c=ms.filter(n=>!bad.test(n));
+  if(kind==='tts')c=c.filter(n=>/tts/i.test(n));
+  else if(kind==='image')c=c.filter(n=>/image/i.test(n)&&!/tts/i.test(n));
+  else c=c.filter(n=>/gemini/i.test(n)&&!/tts|image/i.test(n));
+  const score=n=>ver(n)*10+(/flash/i.test(n)?5:0)+(/lite/i.test(n)?-2:0)+(/pro/i.test(n)?1:0)+(/preview|exp/i.test(n)?-1:0)+(/latest/i.test(n)?0.5:0);
+  return c.sort((a,b)=>score(b)-score(a));
+}
+async function autoModels(){
+  const ms=await listModels();const t=rankModels(ms,'text'),tts=rankModels(ms,'tts'),img=rankModels(ms,'image');
+  if(tts.length&&!ms.includes($('#inTModel').value.trim()))$('#inTModel').value=tts[0];
+  if(img.length&&!ms.includes($('#inIModel').value.trim()))$('#inIModel').value=img[0];
+  if(!img.length){aiImgDisabled=true;aiImgReason='이 키로 쓸 수 있는 이미지 모델 없음';}
+  return {text:t,tts,img};
+}
+/* gtext 재정의: 실제 사용 가능한 모델 목록으로 순서대로 시도 */
+const gtextV41=async function(parts,{json=true,temperature=0.8,ctx='text'}={}){
+  const {text}=await autoModels();const pref=(()=>{try{return localStorage.getItem('yrs_textModel');}catch(e){return null;}})();
+  const list=[...(pref&&text.includes(pref)?[pref]:[]),...text.filter(m=>m!==pref)].slice(0,5);
+  if(!list.length)throw new GErr('대본·분석용 Gemini 모델을 찾지 못했습니다.','AI Studio에서 키를 새 프로젝트로 다시 만드세요.');
+  let last=null;
+  for(const model of list){
+    for(let attempt=0;attempt<4;attempt++){
+      let r,j={};try{r=await gfetch(model,{contents:[{role:'user',parts}],generationConfig:{...(json?{responseMimeType:'application/json'}:{}),temperature}});j=await r.json().catch(()=>({}));}catch(e){r={ok:false,status:0};j={error:{message:e.message}};}
+      const msg=(j.error&&j.error.message)||'';
+      if(r.ok){const txt=((j.candidates&&j.candidates[0]&&j.candidates[0].content&&j.candidates[0].content.parts)||[]).map(p=>p.text||'').join('');
+        const fin=j.candidates&&j.candidates[0]&&j.candidates[0].finishReason;
+        if(!txt){last=new GErr('Gemini가 빈 응답을 보냈습니다'+(fin?` (${fin})`:'')+'.','원본에 민감한 장면이 많으면 안전 필터가 막을 수 있습니다. 다른 영상으로 시도하거나 잠시 후 다시 누르세요.',JSON.stringify(j.promptFeedback||'').slice(0,200));break;}
+        try{localStorage.setItem('yrs_textModel',model);}catch(e){}
+        try{return json?parseJSONLoose(txt):txt;}catch(e){last=new GErr('Gemini 응답 형식이 깨졌습니다.','다시 누르면 대부분 해결됩니다.',txt.slice(0,200));break;}}
+      const d=diag(r.status,msg,ctx);last=d;
+      if(r.status===429&&!/limit:\s*0/.test(msg)){await sleep(Math.min(60,retrySec(j)||8*2**attempt)*1000);continue;}
+      if(r.status>=500||r.status===0){await sleep(4000*(attempt+1));continue;}
+      if(r.status===404||/limit:\s*0/.test(msg))break;
+      throw d;
+    }
+  }
+  throw last||new GErr('Gemini 호출 실패','잠시 후 다시 시도하세요.');
+};
+const showErrV41=function(e){
+  const cause=e.cause2||e.message||String(e),fix=e.fix||'다시 시도해도 같으면 아래 원문 오류를 Claude에게 보여주세요.',raw=e.raw||(e.cause2?'':String(e.stack||'').slice(0,200));
+  $('#vResult').classList.remove('hide');
+  $('#vResult').innerHTML=`<div class="err"><b>원인</b> — ${escapeHtml(cause)}</div><div style="margin-top:8px;font-size:14px;line-height:1.6"><b>해결</b> — ${escapeHtml(fix)}</div>${raw?`<details style="margin-top:10px"><summary class="hint">원문 오류</summary><pre class="out">${escapeHtml(raw)}</pre></details>`:''}`;
+};
+async function runDiag(){
+  const box=$('#vDiag');box.textContent='진단 중…';saveSettings();MODELS=null;
+  try{const m=await autoModels();
+    box.innerHTML=`✔ 키 정상 · 사용 가능 모델 ${MODELS.length}개<br>분석·대본: <b>${escapeHtml(m.text[0]||'없음')}</b><br>음성: <b>${escapeHtml(m.tts[0]||'없음 — 음성 생성 불가')}</b><br>이미지: <b>${escapeHtml(m.img[0]||'없음 → 위키미디어·컨셉 아트 사용')}</b>`;}
+  catch(e){box.innerHTML=`<span class="err">✕ ${escapeHtml(e.cause2||e.message)}</span><br>${escapeHtml(e.fix||'')}${e.raw?`<br><span class="hint">${escapeHtml(e.raw.slice(0,160))}</span>`:''}`;}
+}
+
+/* ================= v4: 원클릭 앱 ================= */
+const TEXT_MODELS=['gemini-3.6-flash','gemini-3.5-flash','gemini-3-flash','gemini-2.5-flash'];
+let gtext=async function(parts,{json=true,temperature=0.8}={}){
+  const pref=localStorage.getItem('yrs_textModel');const list=pref?[pref,...TEXT_MODELS.filter(m=>m!==pref)]:TEXT_MODELS;let lastErr=null;
+  for(const model of list){
+    for(let attempt=0;attempt<5;attempt++){
+      let r,j={};try{r=await gfetch(model,{contents:[{role:'user',parts}],generationConfig:{...(json?{responseMimeType:'application/json'}:{}),temperature}});j=await r.json().catch(()=>({}));}catch(e){r={ok:false,status:0};}
+      const msg=(j.error&&j.error.message)||'';
+      if(r.ok){const txt=((j.candidates&&j.candidates[0]&&j.candidates[0].content&&j.candidates[0].content.parts)||[]).map(p=>p.text||'').join('');
+        if(!txt){lastErr=new Error('빈 응답(안전 필터 가능)');break;}
+        try{localStorage.setItem('yrs_textModel',model);}catch(e){}
+        return json?parseJSONLoose(txt):txt;}
+      if(r.status===404||/not found|not supported|is not available/i.test(msg)){lastErr=new Error(model+' 사용 불가');break;}
+      if(/limit:\s*0/.test(msg)){lastErr=new Error(model+' 무료 한도 없음');break;}
+      if(r.status===429||r.status>=500||r.status===0){await sleep(Math.min(60,retrySec(j)||5*2**attempt)*1000);continue;}
+      if(r.status===400&&/video|file|uri|too long|token/i.test(msg))throw new Error('원본 영상을 읽지 못했습니다 — 공개 영상인지, 너무 길지 않은지 확인하세요. ('+msg.slice(0,120)+')');
+      throw new Error('Gemini '+r.status+': '+msg.slice(0,160));
+    }
+  }
+  throw lastErr||new Error('Gemini 호출 실패');
+};
+const STEPS=[['collect','수집·분석가','원본 영상을 보고 구조·이탈 지점 분석'],['write','작가','업그레이드 대본 작성'],['check','검수관','표절·사실·법적 위험 검사'],['art','아트','장면 이미지'],['voice','성우','내레이션 음성'],['qa','QA','음성·자막 자동 점검'],['render','렌더','영상 인코딩'],['pack','퍼블리싱','썸네일·업로드 정보']];
+function stepUI(){ $('#vSteps').innerHTML=STEPS.map(([k,r,d])=>`<li id="st_${k}"><span class="ic"></span><span class="role">${r}</span><span class="msg">${d}</span></li>`).join(''); }
+function step(k,state,msg){const li=$('#st_'+k);if(!li)return;li.className=state;li.querySelector('.ic').textContent=state==='ok'?'✓':state==='warn'?'!':state==='err'?'✕':'';if(msg)li.querySelector('.msg').textContent=msg;}
+function vbar(p){$('#vBar').style.width=(clamp(p,0,1)*100)+'%';}
+const PIPE={busy:false,brief:null,plan:null,video:null,fmt:'short',len:55,concept:'moving',source:{}};
+
+function analystPrompt(url){
+  return `너는 한국 유튜브 스토리텔링 채널의 리서치 PD다. 첨부된 유튜브 영상(화면과 음성)을 끝까지 보고 설명 없이 JSON만 출력하라.
+{
+ "sourceTitle":"영상 제목(화면·음성에서 파악)",
+ "sourceSeconds":영상 길이(초, 숫자),
+ "isShorts":세로 쇼츠면 true,
+ "concept":"moving | rise | mystery 중 하나 — 사연·가족·희생·선행은 moving, 실패·재기·도전·성공은 rise, 사건·실종·의문사·미스터리는 mystery",
+ "conceptReason":"한 줄",
+ "summary":"원본 3문장 요약",
+ "transcriptKeyLines":["원본 내레이션·대사 중 핵심 문장을 들리는 그대로 12~20개"],
+ "structure":[{"time":"0:00","beat":"비트","technique":"사용 기법","retention":"강|중|약"}],
+ "keep":["원본이 잘한 점(유지할 것)"],
+ "fix":["시청자가 이탈할 지점과 이유"],
+ "upgrades":["새 영상에서 할 구체적 개선 3~5개(더 강한 훅, 비트 재배치, 사실 보강, 여운 있는 결말 등)"],
+ "angle":"원본과 다른 새 관점 한 문장",
+ "facts":["영상에서 확인되는 사실(인물·날짜·장소·수치)"],
+ "verify":["업로드 전 사람이 확인해야 할 주장"],
+ "risks":["명예훼손·사생활·저작권·정책 위험"],
+ "styleNotes":"낭독 속도·톤·편집 리듬·자막·음악 관찰"
+}
+원본: ${url}`;
+}
+function writerPrompt(brief,concept,fmt,len,fixes){
+  const c=CONCEPTS[concept],short=fmt==='short';const cps=c.cps;const sec=short?len:len*60;const chars=Math.round(sec*cps*0.92);
+  const f=short?`- 유튜브 쇼츠 ${sec}초 = 공백 제외 약 ${chars}자(±10%). 씬 9~15개, 씬당 1문장(공백 제외 10~32자).
+- 1번 씬 = 훅: 공백 제외 16자 이내, 첫 1초에 질문을 유발. 인사·"오늘은"·채널 소개·구독 요청 금지.
+- 마지막 씬은 1번 씬과 의미가 이어지게 끝내 반복 시청을 유도.`:`- 유튜브 롱폼 약 ${len}분 = 공백 제외 약 ${chars}자. 씬당 1~3문장(공백 제외 40~120자).
+- 첫 30초 안에 결말에 대한 궁금증. 인사 금지. 챕터 4~7개: 챕터가 시작되는 씬에만 "chapter"(첫 씬 포함), 나머지는 빈 문자열.
+- 각 챕터 끝 씬에 다음으로 넘어가게 만드는 미해결 질문.`;
+  return `너는 구독자 100만 이상 한국 스토리텔링 채널의 수석 작가다. 아래 리서치 브리프로 원본보다 더 몰입감 있는 새 영상 대본을 쓰고 JSON만 출력하라.
+
+[브리프]
+${JSON.stringify({summary:brief.summary,keep:brief.keep,fix:brief.fix,upgrades:brief.upgrades,angle:brief.angle,facts:brief.facts,styleNotes:brief.styleNotes})}
+
+[원칙]
+- 원본과 같은 이야기를 다루되 원본 문장을 그대로 쓰거나 어순만 바꾸지 말 것. 사실만 가져오고 구조·관점·표현은 새로 쓸 것.
+- 브리프의 upgrades와 fix를 반드시 반영하고 무엇을 바꿨는지 differences에 적을 것.
+- 귀로 듣는 구어체, 한 문장에 한 정보. facts에 없는 사실을 지어내지 말고, 불확실하면 유보 표현을 쓸 것.
+- "text"의 "/"는 낭독 쉼표(극적인 지점에만). "emph"는 text에 실제로 있는 단어 0~2개. "direction"은 낭독 지시 15자 내외. "beat"는 비트명.
+- "sfx": ${c.sfx.join(', ')} 중 하나, 대부분 none, 전체의 25% 이하.
+- "keyword": 장면 이미지용 영어 2~4단어(사물·장소·분위기). 실존 인물 금지.
+${c.rules}
+
+[포맷]
+${f}
+${fixes&&fixes.length?`\n[반드시 고칠 것 — 이전 버전 검사 결과]\n- ${fixes.join('\n- ')}\n`:''}
+[출력 JSON]
+{"title":"40자 이내","titleCandidates":["","",""],"hookVariants":["","",""],"angle":"","differences":[""],
+ "scenes":[{"text":"","emph":[],"direction":"","beat":"","keyword":"","chapter":"","sfx":"none","stamp":""}],
+ "description":"설명란 300~600자(첫 2줄 핵심 요약)","tags":["10~15개"],"hashtags":["#3개"],"thumbnailText":"줄당 8자 이내 2줄, 줄바꿈 \\n"}`;
+}
+function reviewerPrompt(brief,rc,concept){
+  return `너는 독립 검수관이다. 작가와 별개로, 아래 원본 사실 목록과 새 대본만 보고 판정하라. JSON만 출력.
+[원본 사실] ${JSON.stringify(brief.facts||[])}
+[원본 요약] ${brief.summary||''}
+[원본 약점] ${JSON.stringify(brief.fix||[])}
+[계획된 개선] ${JSON.stringify(brief.upgrades||[])}
+[컨셉 규칙]
+${CONCEPTS[concept].rules}
+[새 대본] ${JSON.stringify(rc.scenes.map((s,i)=>({n:i+1,text:s.text})))}
+확인: (1) 사실 주장마다 원본 사실에 근거가 있는가, 없으면 유보 표현인가 (2) 명예훼손·사생활·미성년 실명·잔혹 묘사·범인 단정 위험 (3) 컨셉 비트 구조 준수 (4) 계획된 개선이 실제로 반영됐는가 (5) 원본보다 몰입감이 높은가(훅·결말 비교).
+{"pass":bool,"must_fix":[{"scene":n,"problem":"","suggestion":""}],"add_verify":[],"add_risks":[],"upgrade_score":1~5}
+must_fix가 하나라도 있거나 upgrade_score가 3 미만이면 pass는 false.`;
+}
+function validatePlan(rc,fmt,concept,srcText){
+  const E=[],sc=rc.scenes||[];const nchar=t=>cleanText(t||'').replace(/\s/g,'').length;
+  ['title','scenes','description','tags','thumbnailText'].forEach(k=>{if(!rc[k]||(Array.isArray(rc[k])&&!rc[k].length))E.push(`${k} 항목이 비어 있음`);});
+  if(fmt==='short'){if(sc.length<9||sc.length>15)E.push(`씬 수 ${sc.length}개 → 9~15개로`);if(sc[0]&&nchar(sc[0].text)>16)E.push(`1번 씬(훅) ${nchar(sc[0].text)}자 → 16자 이내로`);sc.forEach((s,i)=>{if(nchar(s.text)>40)E.push(`씬${i+1} ${nchar(s.text)}자 → 32자 이내로`);});}
+  else{const ch=sc.filter(s=>s.chapter).length;if(ch<4||ch>7)E.push(`챕터 ${ch}개 → 4~7개로`);if(sc[0]&&!sc[0].chapter)E.push('첫 씬에 챕터명이 없음');}
+  const used=sc.filter(s=>s.sfx&&s.sfx!=='none').length;if(sc.length&&used/sc.length>0.3)E.push(`효과음 ${used}개 → 전체의 25% 이하로`);
+  sc.forEach((s,i)=>{if(s.sfx&&!CONCEPTS[concept].sfx.includes(s.sfx))s.sfx='none';(s.emph||[]).forEach(e=>{if(e&&!cleanText(s.text||'').includes(e))E.push(`씬${i+1} 강조어 '${e}'가 본문에 없음`);});});
+  const body=sc.map(s=>cleanText(s.text||'')).join(' ');
+  if(concept==='mystery'){const m=body.match(/범인은\s*\S+(이다|였다|다)|진범은/g);if(m)E.push('범인 단정 표현 제거: '+m.join(', '));}
+  if(concept==='moving')['감동적','눈물이 났','가슴이 뭉클'].forEach(w=>{if(body.includes(w))E.push(`감정을 직접 말하는 표현 '${w}' 제거`);});
+  ['구독','좋아요','안녕하세요','오늘은'].forEach(w=>{if(body.includes(w))E.push(`금지 표현 '${w}' 제거`);});
+  let ov=0;if(srcText){const A=shingles(body),B=shingles(srcText);let hit=0;A.forEach(x=>{if(B.has(x))hit++;});ov=A.size?hit/A.size:0;if(ov>=0.15)E.push(`원본과 표현이 ${(ov*100).toFixed(0)}% 겹침 → 원본 문장을 쓰지 말고 새로 쓸 것`);}
+  return {pass:!E.length,errors:E,overlap:ov};
+}
+function settings(){return {concept:$('#vConcept').value,format:$('#vFormat').value};}
+let showErr=function(msg){$('#vResult').classList.remove('hide');$('#vResult').innerHTML=`<div class="err">⚠ ${escapeHtml(String(msg))}</div>`;};
+async function generate(){
+  if(PIPE.busy)return;const raw=$('#vUrl').value.trim();const url=normUrl(raw);
+  if(!url)return toast('유튜브 주소를 확인하세요');
+  if(!$('#inGKey').value.trim()){openSettings();return toast('처음 한 번 Gemini API 키를 넣어주세요');}
+  PIPE.busy=true;$('#vGo').disabled=true;$('#vSsam').disabled=true;$('#vGo').textContent='생성 중…';
+  $('#vProg').classList.remove('hide');$('#vResult').classList.add('hide');stepUI();vbar(0);aiImgDisabled=false;
+  let cur='collect';
+  try{
+    /* 1. 수집·분석가 */
+    step('collect','run','Gemini 연결 확인');await autoModels();
+    step('collect','run','원본 영상을 보는 중 (1~3분)');
+    let oTitle='';try{const r=await fetch(`https://www.youtube.com/oembed?url=${encodeURIComponent(url)}&format=json`);if(r.ok){const j=await r.json();oTitle=j.title||'';}}catch(e){}
+    const brief=await gtext([{fileData:{fileUri:url}},{text:analystPrompt(url)}],{temperature:0.4,ctx:'video'});
+    PIPE.brief=brief;const st=settings();
+    const concept=st.concept!=='auto'?st.concept:(CONCEPTS[brief.concept]?brief.concept:'moving');
+    const secs=+brief.sourceSeconds||0;
+    const fmt=st.format!=='auto'?st.format:((/\/shorts\//.test(raw)||brief.isShorts||(secs&&secs<=180))?'short':'long');
+    const len=fmt==='short'?clamp(Math.round(secs||55),30,70):clamp(Math.round((secs||600)/60),6,12);
+    Object.assign(PIPE,{concept,fmt,len,source:{url,title:oTitle||brief.sourceTitle||''}});
+    step('collect','ok',`${CONCEPTS[concept].name} · ${fmt==='short'?'쇼츠 '+len+'초':'롱폼 '+len+'분'} — ${brief.conceptReason||brief.summary||''}`.slice(0,120));vbar(.1);
+    const srcText=(brief.transcriptKeyLines||[]).join('\n');
+    /* 2~3. 작가 ↔ 기계 검수 ↔ 독립 검수관 */
+    cur='write';let fixes=[],rc=null,val=null,verdict=null;
+    for(let round=0;round<4;round++){
+      step('write','run',round?`수정 ${round}회차 — ${fixes[0]||''}`.slice(0,90):'업그레이드 대본 작성 중');
+      rc=await gtext([{text:writerPrompt(brief,concept,fmt,len,fixes)}],{temperature:0.85});
+      if(!rc||!Array.isArray(rc.scenes))throw new Error('대본 형식 오류');
+      val=validatePlan(rc,fmt,concept,srcText);
+      if(!val.pass){fixes=val.errors;if(round<3)continue;}
+      cur='check';step('check','run','독립 검수 중');
+      try{verdict=await gtext([{text:reviewerPrompt(brief,rc,concept)}],{temperature:0.2});}catch(e){verdict={pass:true,must_fix:[],note:'검수 호출 실패: '+e.message};}
+      if(verdict.pass||round>=3)break;
+      fixes=(verdict.must_fix||[]).map(m=>`씬${m.scene}: ${m.problem} → ${m.suggestion}`);if(!fixes.length)fixes=['원본보다 훅과 결말을 더 강하게, 계획된 개선을 모두 반영'];
+      step('check','warn',`반려 ${fixes.length}건 → 작가에게 재작성 지시`);cur='write';
+    }
+    step('write',val.pass?'ok':'warn',`${rc.scenes.length}씬 · "${rc.title}"`+(val.pass?'':' (기계 검수 잔여: '+val.errors.length+'건)'));
+    step('check',verdict&&verdict.pass?'ok':'warn',`표현 겹침 ${(val.overlap*100).toFixed(0)}% · 몰입도 ${verdict&&verdict.upgrade_score||'-'}/5${verdict&&!verdict.pass?' · 미해결 '+(verdict.must_fix||[]).length+'건':''}`);vbar(.25);
+    const analysis={summary:brief.summary,structure:brief.structure||[],strengths:brief.keep||[],weaknesses:brief.fix||[],styleNotes:brief.styleNotes||'',coreFacts:brief.facts||[],
+      verifyList:[...(brief.verify||[]),...((verdict&&verdict.add_verify)||[])],risks:[...(brief.risks||[]),...((verdict&&verdict.add_risks)||[])]};
+    PIPE.plan={analysis,recreation:rc,verdict,validation:val};
+    STUDIO.load({analysis,recreation:rc},{concept,format:fmt,len,sourceUrl:url,sourceTitle:PIPE.source.title,transcript:srcText,angle:rc.angle||brief.angle||''});
+    $('#inImgMode').value=$('#vImg').value;
+    /* 4. 아트 */
+    cur='art';step('art','run','장면 이미지 준비');
+    const cnt=await autoFillImages((p,m)=>{vbar(.25+p*.15);if(m)step('art','run',m);});
+    step('art','ok',`AI ${cnt.ai} · 위키미디어 ${cnt.wiki} · 컨셉 아트 ${cnt.art}`);
+    /* 5. 성우 */
+    cur='voice';step('voice','run','내레이션 생성');
+    await ttsAll((p,m)=>{vbar(.4+p*.25);step('voice','run',m);});step('voice','ok',`${S.scenes.length}개 문장 녹음 완료`);
+    /* 6. QA */
+    cur='qa';let q=qaReport(),fixedN=0;
+    for(let round=0;round<2&&!q.pass;round++){
+      step('qa','run',`문제 ${q.issues.filter(x=>x.fix).length}건 자동 수정`);
+      const longS=q.issues.filter(x=>x.type==='tts_too_long').map(x=>x.scene),redo=q.issues.filter(x=>['tts_too_short','too_quiet','no_audio'].includes(x.type)).map(x=>x.scene);
+      if(longS.length)STUDIO.retts(longS,{style:false});if(redo.length)STUDIO.retts(redo);
+      q.issues.filter(x=>x.type==='caption_overflow').forEach(x=>{const sc=S.scenes[x.scene-1];if(sc&&sc.text.length>20){const half=sc.text.split(/\s+/);sc.text=half.slice(0,Math.ceil(half.length*0.75)).join(' ');sc.audioBuf=null;}});
+      fixedN+=longS.length+redo.length;await ttsAll((p,m)=>step('qa','run',m));q=qaReport();
+    }
+    step('qa',q.pass?'ok':'warn',q.pass?`통과${fixedN?' (자동 수정 '+fixedN+'건)':''} · ${q.total}초`:`잔여 문제 ${q.issues.length}건`);vbar(.68);
+    /* 7. 렌더 */
+    cur='render';step('render','run','영상 인코딩 0%');
+    const blob=await exportMP4((p,m)=>{vbar(.68+p*.28);step('render','run',m);});
+    const base=fileBase();lastVideoName=base+'.mp4';PIPE.video=blob;
+    step('render','ok',`${(blob.size/1e6).toFixed(1)}MB · 다운로드 폴더에 저장`);dl(blob,base+'.mp4');
+    /* 8. 퍼블리싱 */
+    cur='pack';step('pack','run','썸네일·업로드 정보');
+    await sleep(500);drawThumb();const png=await new Promise(r=>$('#thumb').toBlob(r,'image/png'));if(png)dl(png,base+'_썸네일.png');
+    await sleep(500);dl(new Blob([buildMeta()+'\n\n■ 자막 (SRT)\n'+buildSrt()],{type:'text/plain'}),base+'_업로드정보.txt');
+    step('pack','ok','썸네일 PNG · 업로드정보 TXT 저장');vbar(1);
+    showResult(blob,brief,rc,verdict,q);
+    $('#vSsam').disabled=false;
+  }catch(e){step(cur,'err',String(e.cause2||e.message||e).slice(0,140));showErr(e);}
+  PIPE.busy=false;$('#vGo').disabled=false;$('#vGo').textContent='생성하기';
+}
+function showResult(blob,brief,rc,verdict,q){
+  const u=URL.createObjectURL(blob);const C=CONCEPTS[PIPE.concept];
+  const vlist=[...(S.analysis&&S.analysis.verifyList||[]),...(S.analysis&&S.analysis.risks||[])];
+  $('#vResult').classList.remove('hide');
+  $('#vResult').innerHTML=`<div class="result"><video src="${u}" controls playsinline></video><div>
+    <h3>${escapeHtml(rc.title||'')}</h3>
+    <div class="meta">${C.emoji} ${C.name} · ${PIPE.fmt==='short'?'쇼츠':'롱폼'} ${q.total}초 · 몰입도 ${verdict&&verdict.upgrade_score||'-'}/5<br>원본: ${escapeHtml(PIPE.source.title||PIPE.source.url)}</div>
+    <b style="display:block;margin-top:12px">원본 대비 업그레이드</b><ul>${(rc.differences||brief.upgrades||[]).slice(0,4).map(x=>`<li>${escapeHtml(x)}</li>`).join('')}</ul>
+    ${vlist.length?`<b class="chk" style="display:block;margin-top:12px">업로드 전 확인</b><ul class="chk">${vlist.slice(0,6).map(x=>`<li>${escapeHtml(x)}</li>`).join('')}</ul>`:''}
+    <p class="meta" style="margin-top:12px">MP4 · 썸네일 · 업로드정보(제목 후보·설명·태그·자막)가 다운로드 폴더에 저장됐습니다. 쌤컷에서 다듬으려면 <b>쌤컷 편집</b>을 누르세요.</p>
+    <div id="vCmdBox"></div></div></div>`;
+}
+async function toSsam(){
+  if(PIPE.busy||!S.scenes.length)return;
+  const name=fileBase()+'_쌤컷용.mp4';const cues=STUDIO.cues();cues.videoFile=name;
+  const cmd=`/youtube-recreate 쌤컷 편집만 진행해줘. 다운로드 폴더의 '${name}'을 쌤컷에 넣을게. 편집 데이터: ${JSON.stringify(cues)}`;
+  let copied=false;try{await navigator.clipboard.writeText(cmd);copied=true;}catch(e){}
+  window.open('https://ssamtool.com/tool/cut/','_blank');
+  $('#vCmdBox').innerHTML=`<p class="meta" style="margin-top:10px">${copied?'✔ Claude에게 보낼 편집 요청이 복사됐습니다. Claude 채팅에 붙여넣고, 아래 영상 파일을 쌤컷에 끌어다 놓으세요.':'아래 내용을 복사해 Claude 채팅에 붙여넣으세요.'}</p><textarea class="cmd" readonly>${escapeHtml(cmd)}</textarea>`;
+  PIPE.busy=true;$('#vSsam').disabled=true;$('#vSsam').textContent='쌤컷용 렌더 중…';
+  const saved={burn:S.style.burn,sfx:S.style.sfx,top:S.style.top};S.style.burn=false;S.style.sfx=false;S.style.top=false;
+  try{const blob=await exportMP4((p)=>{$('#vSsam').textContent=`쌤컷용 렌더 ${Math.round(p*100)}%`;});dl(blob,name);toast('쌤컷용 영상(자막 없는 버전) 저장 완료');}
+  catch(e){toast('쌤컷용 렌더 실패: '+e.message);}
+  finally{Object.assign(S.style,saved);PIPE.busy=false;$('#vSsam').disabled=false;$('#vSsam').textContent='쌤컷 편집';}
+}
+function openSettings(){$('#vKey').value=$('#inGKey').value;$('#vVoice').value=$('#inVoice').value;$('#vSet').classList.remove('hide');}
+function saveSettings(){
+  const set=(id,v)=>{$('#'+id).value=v;$('#'+id).dispatchEvent(new Event('change'));};
+  set('inGKey',$('#vKey').value.trim());set('inVoice',$('#vVoice').value.trim());set('inImgMode',$('#vImg').value);
+  ['vConcept','vFormat','vImg'].forEach(id=>{try{localStorage.setItem('yrs_'+id,$('#'+id).value);}catch(e){}});
+}
+['vConcept','vFormat','vImg'].forEach(id=>{try{const v=localStorage.getItem('yrs_'+id);if(v)$('#'+id).value=v;}catch(e){}});
+$('#vGear').onclick=openSettings;$('#vSetClose').onclick=()=>$('#vSet').classList.add('hide');
+$('#vSetSave').onclick=()=>{saveSettings();$('#vSet').classList.add('hide');toast('저장됨');};
+$('#vTest').onclick=()=>{saveSettings();$('#btnTestTTS').click();};
+$('#vAdv').onclick=()=>{$('#vSet').classList.add('hide');$('#app').classList.toggle('hide');$('#legacy').classList.toggle('hide');};
+gtext=gtextV41;showErr=showErrV41;$('#vDiagBtn').onclick=runDiag;
+$('#vGo').onclick=generate;$('#vSsam').onclick=toSsam;
+$('#vUrl').addEventListener('keydown',e=>{if(e.key==='Enter')generate();});
+
+$('#btnBack').onclick=()=>{$('#app').classList.remove('hide');$('#legacy').classList.add('hide');};
 renderConcepts();ensureFonts().then(drawStatic);drawStatic();
 </script>
 </body>
