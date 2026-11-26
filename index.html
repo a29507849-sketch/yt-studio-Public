@@ -1,0 +1,3144 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>유튜브 재창조 스튜디오 v3.1 — Claude 자동화</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nanum+Gothic+Coding:wght@700&family=Nanum+Myeongjo:wght@700;800&display=swap">
+<style>
+:root{--bg:#0e0f13;--panel:#171920;--panel2:#1f222b;--line:#2c303b;--tx:#e9ebf0;--mut:#9097a6;--ac:#ffd400;--ok:#3ecf8e;--warn:#ffb020;--bad:#ff5c5c}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font-family:Pretendard,'Noto Sans KR','Apple SD Gothic Neo','Malgun Gothic',sans-serif;font-size:14px}
+header{display:flex;align-items:center;gap:16px;padding:12px 20px;border-bottom:1px solid var(--line);background:#121318;position:sticky;top:0;z-index:5;flex-wrap:wrap}
+header h1{font-size:16px;margin:0;font-weight:800}
+.tabs{display:flex;gap:4px}
+.tab{padding:8px 12px;border-radius:8px;cursor:pointer;color:var(--mut);font-weight:600}
+.tab.on{background:var(--panel2);color:var(--tx)}
+.tab .n{display:inline-block;width:18px;height:18px;border-radius:50%;background:var(--line);text-align:center;line-height:18px;font-size:11px;margin-right:6px}
+.tab.on .n{background:var(--ac);color:#000}
+.wrap{display:grid;grid-template-columns:minmax(0,1fr) 420px;gap:16px;padding:16px 20px;align-items:start}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px;margin-bottom:16px}
+.panel h2{font-size:15px;margin:0 0 12px}
+.panel h3{font-size:13px;margin:16px 0 8px;color:var(--mut)}
+label{display:block;font-size:12px;color:var(--mut);margin:10px 0 4px}
+input,textarea,select{width:100%;background:var(--panel2);border:1px solid var(--line);color:var(--tx);border-radius:8px;padding:8px 10px;font:inherit}
+textarea{resize:vertical;min-height:60px}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.row>*{flex:1}
+.row>.auto{flex:0 0 auto}
+button{background:var(--panel2);border:1px solid var(--line);color:var(--tx);border-radius:8px;padding:8px 12px;cursor:pointer;font:inherit;font-weight:600;white-space:nowrap}
+button:hover{border-color:#4a5060}
+button.pri{background:var(--ac);color:#000;border-color:var(--ac)}
+button.rec{background:#3a1515;border-color:#7a2a2a}
+button:disabled{opacity:.45;cursor:not-allowed}
+.hint{font-size:12px;color:var(--mut);line-height:1.6}
+.hide{display:none!important}
+.seg{display:flex;background:var(--panel2);border-radius:8px;padding:3px;gap:3px}
+.seg div{flex:1;text-align:center;padding:7px;border-radius:6px;cursor:pointer;color:var(--mut);font-weight:600}
+.seg div.on{background:var(--ac);color:#000}
+.concepts{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.cc{background:var(--panel2);border:2px solid var(--line);border-radius:12px;padding:14px;cursor:pointer}
+.cc.on{border-color:var(--ac)}
+.cc b{display:block;font-size:15px;margin-bottom:6px}
+.cc span{font-size:12px;color:var(--mut);line-height:1.5}
+.src{display:flex;gap:12px;align-items:center;margin-top:10px}
+.src img{width:160px;border-radius:8px}
+.scene{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:10px;margin-bottom:10px;display:grid;grid-template-columns:96px 1fr;gap:10px}
+.scene .th{width:96px;height:96px;border-radius:8px;background:#000 center/cover;position:relative;overflow:hidden;font-size:11px;color:var(--mut);display:flex;align-items:center;justify-content:center;text-align:center}
+.scene .idx{position:absolute;top:4px;left:4px;background:rgba(0,0,0,.7);color:#fff;border-radius:4px;padding:1px 6px;font-weight:700}
+.scene .beat{position:absolute;bottom:4px;left:4px;right:4px;background:rgba(0,0,0,.7);color:var(--ac);border-radius:4px;font-size:10px;padding:1px 4px}
+.scene textarea{min-height:48px}
+.scene .row input,.scene .row select{padding:6px 8px;font-size:12.5px}
+.scene .tools{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px;align-items:center}
+.scene .tools button{padding:5px 9px;font-size:12px}
+.badge{display:inline-block;font-size:11px;padding:2px 7px;border-radius:20px;background:var(--line);color:var(--mut)}
+.badge.ok{background:rgba(62,207,142,.15);color:var(--ok)}
+.stage{position:sticky;top:70px}
+.cvwrap{background:#000;border-radius:12px;overflow:hidden;display:flex;align-items:center;justify-content:center;border:1px solid var(--line)}
+#cv{display:block;max-width:100%;max-height:62vh}
+.checks div{padding:6px 0;border-bottom:1px dashed var(--line);font-size:12.5px;line-height:1.5}
+.w{color:var(--warn)}.b{color:var(--bad)}.o{color:var(--ok)}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.78);display:flex;align-items:center;justify-content:center;z-index:20}
+.modal .box{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px;width:min(760px,94vw);max-height:88vh;overflow:auto}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.grid img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:8px;cursor:pointer;border:2px solid transparent}
+.grid img:hover{border-color:var(--ac)}
+#toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#000;border:1px solid var(--line);padding:10px 16px;border-radius:8px;opacity:0;transition:.25s;pointer-events:none;z-index:40;max-width:90vw}
+#toast.on{opacity:1}
+pre.out{white-space:pre-wrap;background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:10px;font-size:12.5px;max-height:320px;overflow:auto;margin:0}
+.hooks button{display:block;width:100%;text-align:left;margin-bottom:6px;font-weight:500;white-space:normal}
+.prog{height:6px;background:var(--panel2);border-radius:4px;overflow:hidden;margin-top:8px}
+.prog i{display:block;height:100%;width:0;background:var(--ac)}
+.an table{width:100%;border-collapse:collapse;font-size:12.5px}
+.an td,.an th{border-bottom:1px solid var(--line);padding:6px;text-align:left;vertical-align:top}
+.an th{color:var(--mut);font-weight:600}
+.an ul{margin:4px 0 0;padding-left:18px;line-height:1.6;font-size:13px}
+.pbox{width:min(980px,96vw)!important;text-align:center}
+.pdir{color:var(--ac);font-size:15px;margin:6px 0 18px}
+.ptext{font-size:38px;line-height:1.55;font-weight:700;min-height:180px;display:flex;align-items:center;justify-content:center;padding:0 20px}
+.ptext em{font-style:normal;color:var(--ac);text-decoration:underline;text-underline-offset:6px}
+.ptext .ps{color:#666;margin:0 6px}
+.meter{height:8px;background:var(--panel2);border-radius:4px;overflow:hidden;margin:16px auto;width:60%}
+.meter i{display:block;height:100%;width:0;background:var(--ok);transition:width .05s}
+.pstate{font-size:13px;color:var(--mut)}
+.pstate.recing{color:var(--bad);font-weight:700}
+@media(max-width:1100px){.wrap{grid-template-columns:1fr}.stage{position:static}.concepts{grid-template-columns:1fr}}
+</style>
+<script>/*! mp4-muxer 5.2.2 | MIT License | https://github.com/Vanilagy/mp4-muxer */
+"use strict";
+var Mp4Muxer = (() => {
+  var __defProp = Object.defineProperty;
+  var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
+  var __getOwnPropNames = Object.getOwnPropertyNames;
+  var __hasOwnProp = Object.prototype.hasOwnProperty;
+  var __export = (target, all) => {
+    for (var name in all)
+      __defProp(target, name, { get: all[name], enumerable: true });
+  };
+  var __copyProps = (to, from, except, desc) => {
+    if (from && typeof from === "object" || typeof from === "function") {
+      for (let key of __getOwnPropNames(from))
+        if (!__hasOwnProp.call(to, key) && key !== except)
+          __defProp(to, key, { get: () => from[key], enumerable: !(desc = __getOwnPropDesc(from, key)) || desc.enumerable });
+    }
+    return to;
+  };
+  var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
+  var __accessCheck = (obj, member, msg) => {
+    if (!member.has(obj))
+      throw TypeError("Cannot " + msg);
+  };
+  var __privateGet = (obj, member, getter) => {
+    __accessCheck(obj, member, "read from private field");
+    return getter ? getter.call(obj) : member.get(obj);
+  };
+  var __privateAdd = (obj, member, value) => {
+    if (member.has(obj))
+      throw TypeError("Cannot add the same private member more than once");
+    member instanceof WeakSet ? member.add(obj) : member.set(obj, value);
+  };
+  var __privateSet = (obj, member, value, setter) => {
+    __accessCheck(obj, member, "write to private field");
+    setter ? setter.call(obj, value) : member.set(obj, value);
+    return value;
+  };
+  var __privateWrapper = (obj, member, setter, getter) => ({
+    set _(value) {
+      __privateSet(obj, member, value, setter);
+    },
+    get _() {
+      return __privateGet(obj, member, getter);
+    }
+  });
+  var __privateMethod = (obj, member, method) => {
+    __accessCheck(obj, member, "access private method");
+    return method;
+  };
+
+  // src/index.ts
+  var src_exports = {};
+  __export(src_exports, {
+    ArrayBufferTarget: () => ArrayBufferTarget,
+    FileSystemWritableFileStreamTarget: () => FileSystemWritableFileStreamTarget,
+    Muxer: () => Muxer,
+    StreamTarget: () => StreamTarget
+  });
+
+  // src/misc.ts
+  var bytes = new Uint8Array(8);
+  var view = new DataView(bytes.buffer);
+  var u8 = (value) => {
+    return [(value % 256 + 256) % 256];
+  };
+  var u16 = (value) => {
+    view.setUint16(0, value, false);
+    return [bytes[0], bytes[1]];
+  };
+  var i16 = (value) => {
+    view.setInt16(0, value, false);
+    return [bytes[0], bytes[1]];
+  };
+  var u24 = (value) => {
+    view.setUint32(0, value, false);
+    return [bytes[1], bytes[2], bytes[3]];
+  };
+  var u32 = (value) => {
+    view.setUint32(0, value, false);
+    return [bytes[0], bytes[1], bytes[2], bytes[3]];
+  };
+  var i32 = (value) => {
+    view.setInt32(0, value, false);
+    return [bytes[0], bytes[1], bytes[2], bytes[3]];
+  };
+  var u64 = (value) => {
+    view.setUint32(0, Math.floor(value / 2 ** 32), false);
+    view.setUint32(4, value, false);
+    return [bytes[0], bytes[1], bytes[2], bytes[3], bytes[4], bytes[5], bytes[6], bytes[7]];
+  };
+  var fixed_8_8 = (value) => {
+    view.setInt16(0, 2 ** 8 * value, false);
+    return [bytes[0], bytes[1]];
+  };
+  var fixed_16_16 = (value) => {
+    view.setInt32(0, 2 ** 16 * value, false);
+    return [bytes[0], bytes[1], bytes[2], bytes[3]];
+  };
+  var fixed_2_30 = (value) => {
+    view.setInt32(0, 2 ** 30 * value, false);
+    return [bytes[0], bytes[1], bytes[2], bytes[3]];
+  };
+  var ascii = (text, nullTerminated = false) => {
+    let bytes2 = Array(text.length).fill(null).map((_, i) => text.charCodeAt(i));
+    if (nullTerminated)
+      bytes2.push(0);
+    return bytes2;
+  };
+  var last = (arr) => {
+    return arr && arr[arr.length - 1];
+  };
+  var lastPresentedSample = (samples) => {
+    let result = void 0;
+    for (let sample of samples) {
+      if (!result || sample.presentationTimestamp > result.presentationTimestamp) {
+        result = sample;
+      }
+    }
+    return result;
+  };
+  var intoTimescale = (timeInSeconds, timescale, round = true) => {
+    let value = timeInSeconds * timescale;
+    return round ? Math.round(value) : value;
+  };
+  var rotationMatrix = (rotationInDegrees) => {
+    let theta = rotationInDegrees * (Math.PI / 180);
+    let cosTheta = Math.cos(theta);
+    let sinTheta = Math.sin(theta);
+    return [
+      cosTheta,
+      sinTheta,
+      0,
+      -sinTheta,
+      cosTheta,
+      0,
+      0,
+      0,
+      1
+    ];
+  };
+  var IDENTITY_MATRIX = rotationMatrix(0);
+  var matrixToBytes = (matrix) => {
+    return [
+      fixed_16_16(matrix[0]),
+      fixed_16_16(matrix[1]),
+      fixed_2_30(matrix[2]),
+      fixed_16_16(matrix[3]),
+      fixed_16_16(matrix[4]),
+      fixed_2_30(matrix[5]),
+      fixed_16_16(matrix[6]),
+      fixed_16_16(matrix[7]),
+      fixed_2_30(matrix[8])
+    ];
+  };
+  var deepClone = (x) => {
+    if (!x)
+      return x;
+    if (typeof x !== "object")
+      return x;
+    if (Array.isArray(x))
+      return x.map(deepClone);
+    return Object.fromEntries(Object.entries(x).map(([key, value]) => [key, deepClone(value)]));
+  };
+  var isU32 = (value) => {
+    return value >= 0 && value < 2 ** 32;
+  };
+
+  // src/box.ts
+  var box = (type, contents, children) => ({
+    type,
+    contents: contents && new Uint8Array(contents.flat(10)),
+    children
+  });
+  var fullBox = (type, version, flags, contents, children) => box(
+    type,
+    [u8(version), u24(flags), contents ?? []],
+    children
+  );
+  var ftyp = (details) => {
+    let minorVersion = 512;
+    if (details.fragmented)
+      return box("ftyp", [
+        ascii("iso5"),
+        // Major brand
+        u32(minorVersion),
+        // Minor version
+        // Compatible brands
+        ascii("iso5"),
+        ascii("iso6"),
+        ascii("mp41")
+      ]);
+    return box("ftyp", [
+      ascii("isom"),
+      // Major brand
+      u32(minorVersion),
+      // Minor version
+      // Compatible brands
+      ascii("isom"),
+      details.holdsAvc ? ascii("avc1") : [],
+      ascii("mp41")
+    ]);
+  };
+  var mdat = (reserveLargeSize) => ({ type: "mdat", largeSize: reserveLargeSize });
+  var free = (size) => ({ type: "free", size });
+  var moov = (tracks, creationTime, fragmented = false) => box("moov", null, [
+    mvhd(creationTime, tracks),
+    ...tracks.map((x) => trak(x, creationTime)),
+    fragmented ? mvex(tracks) : null
+  ]);
+  var mvhd = (creationTime, tracks) => {
+    let duration = intoTimescale(Math.max(
+      0,
+      ...tracks.filter((x) => x.samples.length > 0).map((x) => {
+        const lastSample = lastPresentedSample(x.samples);
+        return lastSample.presentationTimestamp + lastSample.duration;
+      })
+    ), GLOBAL_TIMESCALE);
+    let nextTrackId = Math.max(...tracks.map((x) => x.id)) + 1;
+    let needsU64 = !isU32(creationTime) || !isU32(duration);
+    let u32OrU64 = needsU64 ? u64 : u32;
+    return fullBox("mvhd", +needsU64, 0, [
+      u32OrU64(creationTime),
+      // Creation time
+      u32OrU64(creationTime),
+      // Modification time
+      u32(GLOBAL_TIMESCALE),
+      // Timescale
+      u32OrU64(duration),
+      // Duration
+      fixed_16_16(1),
+      // Preferred rate
+      fixed_8_8(1),
+      // Preferred volume
+      Array(10).fill(0),
+      // Reserved
+      matrixToBytes(IDENTITY_MATRIX),
+      // Matrix
+      Array(24).fill(0),
+      // Pre-defined
+      u32(nextTrackId)
+      // Next track ID
+    ]);
+  };
+  var trak = (track, creationTime) => box("trak", null, [
+    tkhd(track, creationTime),
+    mdia(track, creationTime)
+  ]);
+  var tkhd = (track, creationTime) => {
+    let lastSample = lastPresentedSample(track.samples);
+    let durationInGlobalTimescale = intoTimescale(
+      lastSample ? lastSample.presentationTimestamp + lastSample.duration : 0,
+      GLOBAL_TIMESCALE
+    );
+    let needsU64 = !isU32(creationTime) || !isU32(durationInGlobalTimescale);
+    let u32OrU64 = needsU64 ? u64 : u32;
+    let matrix;
+    if (track.info.type === "video") {
+      matrix = typeof track.info.rotation === "number" ? rotationMatrix(track.info.rotation) : track.info.rotation;
+    } else {
+      matrix = IDENTITY_MATRIX;
+    }
+    return fullBox("tkhd", +needsU64, 3, [
+      u32OrU64(creationTime),
+      // Creation time
+      u32OrU64(creationTime),
+      // Modification time
+      u32(track.id),
+      // Track ID
+      u32(0),
+      // Reserved
+      u32OrU64(durationInGlobalTimescale),
+      // Duration
+      Array(8).fill(0),
+      // Reserved
+      u16(0),
+      // Layer
+      u16(0),
+      // Alternate group
+      fixed_8_8(track.info.type === "audio" ? 1 : 0),
+      // Volume
+      u16(0),
+      // Reserved
+      matrixToBytes(matrix),
+      // Matrix
+      fixed_16_16(track.info.type === "video" ? track.info.width : 0),
+      // Track width
+      fixed_16_16(track.info.type === "video" ? track.info.height : 0)
+      // Track height
+    ]);
+  };
+  var mdia = (track, creationTime) => box("mdia", null, [
+    mdhd(track, creationTime),
+    hdlr(track.info.type === "video" ? "vide" : "soun"),
+    minf(track)
+  ]);
+  var mdhd = (track, creationTime) => {
+    let lastSample = lastPresentedSample(track.samples);
+    let localDuration = intoTimescale(
+      lastSample ? lastSample.presentationTimestamp + lastSample.duration : 0,
+      track.timescale
+    );
+    let needsU64 = !isU32(creationTime) || !isU32(localDuration);
+    let u32OrU64 = needsU64 ? u64 : u32;
+    return fullBox("mdhd", +needsU64, 0, [
+      u32OrU64(creationTime),
+      // Creation time
+      u32OrU64(creationTime),
+      // Modification time
+      u32(track.timescale),
+      // Timescale
+      u32OrU64(localDuration),
+      // Duration
+      u16(21956),
+      // Language ("und", undetermined)
+      u16(0)
+      // Quality
+    ]);
+  };
+  var hdlr = (componentSubtype) => fullBox("hdlr", 0, 0, [
+    ascii("mhlr"),
+    // Component type
+    ascii(componentSubtype),
+    // Component subtype
+    u32(0),
+    // Component manufacturer
+    u32(0),
+    // Component flags
+    u32(0),
+    // Component flags mask
+    ascii("mp4-muxer-hdlr", true)
+    // Component name
+  ]);
+  var minf = (track) => box("minf", null, [
+    track.info.type === "video" ? vmhd() : smhd(),
+    dinf(),
+    stbl(track)
+  ]);
+  var vmhd = () => fullBox("vmhd", 0, 1, [
+    u16(0),
+    // Graphics mode
+    u16(0),
+    // Opcolor R
+    u16(0),
+    // Opcolor G
+    u16(0)
+    // Opcolor B
+  ]);
+  var smhd = () => fullBox("smhd", 0, 0, [
+    u16(0),
+    // Balance
+    u16(0)
+    // Reserved
+  ]);
+  var dinf = () => box("dinf", null, [
+    dref()
+  ]);
+  var dref = () => fullBox("dref", 0, 0, [
+    u32(1)
+    // Entry count
+  ], [
+    url()
+  ]);
+  var url = () => fullBox("url ", 0, 1);
+  var stbl = (track) => {
+    const needsCtts = track.compositionTimeOffsetTable.length > 1 || track.compositionTimeOffsetTable.some((x) => x.sampleCompositionTimeOffset !== 0);
+    return box("stbl", null, [
+      stsd(track),
+      stts(track),
+      stss(track),
+      stsc(track),
+      stsz(track),
+      stco(track),
+      needsCtts ? ctts(track) : null
+    ]);
+  };
+  var stsd = (track) => fullBox("stsd", 0, 0, [
+    u32(1)
+    // Entry count
+  ], [
+    track.info.type === "video" ? videoSampleDescription(
+      VIDEO_CODEC_TO_BOX_NAME[track.info.codec],
+      track
+    ) : soundSampleDescription(
+      AUDIO_CODEC_TO_BOX_NAME[track.info.codec],
+      track
+    )
+  ]);
+  var videoSampleDescription = (compressionType, track) => box(compressionType, [
+    Array(6).fill(0),
+    // Reserved
+    u16(1),
+    // Data reference index
+    u16(0),
+    // Pre-defined
+    u16(0),
+    // Reserved
+    Array(12).fill(0),
+    // Pre-defined
+    u16(track.info.width),
+    // Width
+    u16(track.info.height),
+    // Height
+    u32(4718592),
+    // Horizontal resolution
+    u32(4718592),
+    // Vertical resolution
+    u32(0),
+    // Reserved
+    u16(1),
+    // Frame count
+    Array(32).fill(0),
+    // Compressor name
+    u16(24),
+    // Depth
+    i16(65535)
+    // Pre-defined
+  ], [
+    VIDEO_CODEC_TO_CONFIGURATION_BOX[track.info.codec](track),
+    track.info.decoderConfig.colorSpace ? colr(track) : null
+  ]);
+  var COLOR_PRIMARIES_MAP = {
+    "bt709": 1,
+    // ITU-R BT.709
+    "bt470bg": 5,
+    // ITU-R BT.470BG
+    "smpte170m": 6
+    // ITU-R BT.601 525 - SMPTE 170M
+  };
+  var TRANSFER_CHARACTERISTICS_MAP = {
+    "bt709": 1,
+    // ITU-R BT.709
+    "smpte170m": 6,
+    // SMPTE 170M
+    "iec61966-2-1": 13
+    // IEC 61966-2-1
+  };
+  var MATRIX_COEFFICIENTS_MAP = {
+    "rgb": 0,
+    // Identity
+    "bt709": 1,
+    // ITU-R BT.709
+    "bt470bg": 5,
+    // ITU-R BT.470BG
+    "smpte170m": 6
+    // SMPTE 170M
+  };
+  var colr = (track) => box("colr", [
+    ascii("nclx"),
+    // Colour type
+    u16(COLOR_PRIMARIES_MAP[track.info.decoderConfig.colorSpace.primaries]),
+    // Colour primaries
+    u16(TRANSFER_CHARACTERISTICS_MAP[track.info.decoderConfig.colorSpace.transfer]),
+    // Transfer characteristics
+    u16(MATRIX_COEFFICIENTS_MAP[track.info.decoderConfig.colorSpace.matrix]),
+    // Matrix coefficients
+    u8((track.info.decoderConfig.colorSpace.fullRange ? 1 : 0) << 7)
+    // Full range flag
+  ]);
+  var avcC = (track) => track.info.decoderConfig && box("avcC", [
+    // For AVC, description is an AVCDecoderConfigurationRecord, so nothing else to do here
+    ...new Uint8Array(track.info.decoderConfig.description)
+  ]);
+  var hvcC = (track) => track.info.decoderConfig && box("hvcC", [
+    // For HEVC, description is a HEVCDecoderConfigurationRecord, so nothing else to do here
+    ...new Uint8Array(track.info.decoderConfig.description)
+  ]);
+  var vpcC = (track) => {
+    if (!track.info.decoderConfig) {
+      return null;
+    }
+    let decoderConfig = track.info.decoderConfig;
+    if (!decoderConfig.colorSpace) {
+      throw new Error(`'colorSpace' is required in the decoder config for VP9.`);
+    }
+    let parts = decoderConfig.codec.split(".");
+    let profile = Number(parts[1]);
+    let level = Number(parts[2]);
+    let bitDepth = Number(parts[3]);
+    let chromaSubsampling = 0;
+    let thirdByte = (bitDepth << 4) + (chromaSubsampling << 1) + Number(decoderConfig.colorSpace.fullRange);
+    let colourPrimaries = 2;
+    let transferCharacteristics = 2;
+    let matrixCoefficients = 2;
+    return fullBox("vpcC", 1, 0, [
+      u8(profile),
+      // Profile
+      u8(level),
+      // Level
+      u8(thirdByte),
+      // Bit depth, chroma subsampling, full range
+      u8(colourPrimaries),
+      // Colour primaries
+      u8(transferCharacteristics),
+      // Transfer characteristics
+      u8(matrixCoefficients),
+      // Matrix coefficients
+      u16(0)
+      // Codec initialization data size
+    ]);
+  };
+  var av1C = () => {
+    let marker = 1;
+    let version = 1;
+    let firstByte = (marker << 7) + version;
+    return box("av1C", [
+      firstByte,
+      0,
+      0,
+      0
+    ]);
+  };
+  var soundSampleDescription = (compressionType, track) => box(compressionType, [
+    Array(6).fill(0),
+    // Reserved
+    u16(1),
+    // Data reference index
+    u16(0),
+    // Version
+    u16(0),
+    // Revision level
+    u32(0),
+    // Vendor
+    u16(track.info.numberOfChannels),
+    // Number of channels
+    u16(16),
+    // Sample size (bits)
+    u16(0),
+    // Compression ID
+    u16(0),
+    // Packet size
+    fixed_16_16(track.info.sampleRate)
+    // Sample rate
+  ], [
+    AUDIO_CODEC_TO_CONFIGURATION_BOX[track.info.codec](track)
+  ]);
+  var esds = (track) => {
+    let description = new Uint8Array(track.info.decoderConfig.description);
+    return fullBox("esds", 0, 0, [
+      // https://stackoverflow.com/a/54803118
+      u32(58753152),
+      // TAG(3) = Object Descriptor ([2])
+      u8(32 + description.byteLength),
+      // length of this OD (which includes the next 2 tags)
+      u16(1),
+      // ES_ID = 1
+      u8(0),
+      // flags etc = 0
+      u32(75530368),
+      // TAG(4) = ES Descriptor ([2]) embedded in above OD
+      u8(18 + description.byteLength),
+      // length of this ESD
+      u8(64),
+      // MPEG-4 Audio
+      u8(21),
+      // stream type(6bits)=5 audio, flags(2bits)=1
+      u24(0),
+      // 24bit buffer size
+      u32(130071),
+      // max bitrate
+      u32(130071),
+      // avg bitrate
+      u32(92307584),
+      // TAG(5) = ASC ([2],[3]) embedded in above OD
+      u8(description.byteLength),
+      // length
+      ...description,
+      u32(109084800),
+      // TAG(6)
+      u8(1),
+      // length
+      u8(2)
+      // data
+    ]);
+  };
+  var dOps = (track) => {
+    let preskip = 3840;
+    let gain = 0;
+    const description = track.info.decoderConfig?.description;
+    if (description) {
+      if (description.byteLength < 18) {
+        throw new TypeError("Invalid decoder description provided for Opus; must be at least 18 bytes long.");
+      }
+      const view2 = ArrayBuffer.isView(description) ? new DataView(description.buffer, description.byteOffset, description.byteLength) : new DataView(description);
+      preskip = view2.getUint16(10, true);
+      gain = view2.getInt16(14, true);
+    }
+    return box("dOps", [
+      u8(0),
+      // Version
+      u8(track.info.numberOfChannels),
+      // OutputChannelCount
+      u16(preskip),
+      u32(track.info.sampleRate),
+      // InputSampleRate
+      fixed_8_8(gain),
+      // OutputGain
+      u8(0)
+      // ChannelMappingFamily
+    ]);
+  };
+  var stts = (track) => {
+    return fullBox("stts", 0, 0, [
+      u32(track.timeToSampleTable.length),
+      // Number of entries
+      track.timeToSampleTable.map((x) => [
+        // Time-to-sample table
+        u32(x.sampleCount),
+        // Sample count
+        u32(x.sampleDelta)
+        // Sample duration
+      ])
+    ]);
+  };
+  var stss = (track) => {
+    if (track.samples.every((x) => x.type === "key"))
+      return null;
+    let keySamples = [...track.samples.entries()].filter(([, sample]) => sample.type === "key");
+    return fullBox("stss", 0, 0, [
+      u32(keySamples.length),
+      // Number of entries
+      keySamples.map(([index]) => u32(index + 1))
+      // Sync sample table
+    ]);
+  };
+  var stsc = (track) => {
+    return fullBox("stsc", 0, 0, [
+      u32(track.compactlyCodedChunkTable.length),
+      // Number of entries
+      track.compactlyCodedChunkTable.map((x) => [
+        // Sample-to-chunk table
+        u32(x.firstChunk),
+        // First chunk
+        u32(x.samplesPerChunk),
+        // Samples per chunk
+        u32(1)
+        // Sample description index
+      ])
+    ]);
+  };
+  var stsz = (track) => fullBox("stsz", 0, 0, [
+    u32(0),
+    // Sample size (0 means non-constant size)
+    u32(track.samples.length),
+    // Number of entries
+    track.samples.map((x) => u32(x.size))
+    // Sample size table
+  ]);
+  var stco = (track) => {
+    if (track.finalizedChunks.length > 0 && last(track.finalizedChunks).offset >= 2 ** 32) {
+      return fullBox("co64", 0, 0, [
+        u32(track.finalizedChunks.length),
+        // Number of entries
+        track.finalizedChunks.map((x) => u64(x.offset))
+        // Chunk offset table
+      ]);
+    }
+    return fullBox("stco", 0, 0, [
+      u32(track.finalizedChunks.length),
+      // Number of entries
+      track.finalizedChunks.map((x) => u32(x.offset))
+      // Chunk offset table
+    ]);
+  };
+  var ctts = (track) => {
+    return fullBox("ctts", 0, 0, [
+      u32(track.compositionTimeOffsetTable.length),
+      // Number of entries
+      track.compositionTimeOffsetTable.map((x) => [
+        // Time-to-sample table
+        u32(x.sampleCount),
+        // Sample count
+        u32(x.sampleCompositionTimeOffset)
+        // Sample offset
+      ])
+    ]);
+  };
+  var mvex = (tracks) => {
+    return box("mvex", null, tracks.map(trex));
+  };
+  var trex = (track) => {
+    return fullBox("trex", 0, 0, [
+      u32(track.id),
+      // Track ID
+      u32(1),
+      // Default sample description index
+      u32(0),
+      // Default sample duration
+      u32(0),
+      // Default sample size
+      u32(0)
+      // Default sample flags
+    ]);
+  };
+  var moof = (sequenceNumber, tracks) => {
+    return box("moof", null, [
+      mfhd(sequenceNumber),
+      ...tracks.map(traf)
+    ]);
+  };
+  var mfhd = (sequenceNumber) => {
+    return fullBox("mfhd", 0, 0, [
+      u32(sequenceNumber)
+      // Sequence number
+    ]);
+  };
+  var fragmentSampleFlags = (sample) => {
+    let byte1 = 0;
+    let byte2 = 0;
+    let byte3 = 0;
+    let byte4 = 0;
+    let sampleIsDifferenceSample = sample.type === "delta";
+    byte2 |= +sampleIsDifferenceSample;
+    if (sampleIsDifferenceSample) {
+      byte1 |= 1;
+    } else {
+      byte1 |= 2;
+    }
+    return byte1 << 24 | byte2 << 16 | byte3 << 8 | byte4;
+  };
+  var traf = (track) => {
+    return box("traf", null, [
+      tfhd(track),
+      tfdt(track),
+      trun(track)
+    ]);
+  };
+  var tfhd = (track) => {
+    let tfFlags = 0;
+    tfFlags |= 8;
+    tfFlags |= 16;
+    tfFlags |= 32;
+    tfFlags |= 131072;
+    let referenceSample = track.currentChunk.samples[1] ?? track.currentChunk.samples[0];
+    let referenceSampleInfo = {
+      duration: referenceSample.timescaleUnitsToNextSample,
+      size: referenceSample.size,
+      flags: fragmentSampleFlags(referenceSample)
+    };
+    return fullBox("tfhd", 0, tfFlags, [
+      u32(track.id),
+      // Track ID
+      u32(referenceSampleInfo.duration),
+      // Default sample duration
+      u32(referenceSampleInfo.size),
+      // Default sample size
+      u32(referenceSampleInfo.flags)
+      // Default sample flags
+    ]);
+  };
+  var tfdt = (track) => {
+    return fullBox("tfdt", 1, 0, [
+      u64(intoTimescale(track.currentChunk.startTimestamp, track.timescale))
+      // Base Media Decode Time
+    ]);
+  };
+  var trun = (track) => {
+    let allSampleDurations = track.currentChunk.samples.map((x) => x.timescaleUnitsToNextSample);
+    let allSampleSizes = track.currentChunk.samples.map((x) => x.size);
+    let allSampleFlags = track.currentChunk.samples.map(fragmentSampleFlags);
+    let allSampleCompositionTimeOffsets = track.currentChunk.samples.map((x) => intoTimescale(x.presentationTimestamp - x.decodeTimestamp, track.timescale));
+    let uniqueSampleDurations = new Set(allSampleDurations);
+    let uniqueSampleSizes = new Set(allSampleSizes);
+    let uniqueSampleFlags = new Set(allSampleFlags);
+    let uniqueSampleCompositionTimeOffsets = new Set(allSampleCompositionTimeOffsets);
+    let firstSampleFlagsPresent = uniqueSampleFlags.size === 2 && allSampleFlags[0] !== allSampleFlags[1];
+    let sampleDurationPresent = uniqueSampleDurations.size > 1;
+    let sampleSizePresent = uniqueSampleSizes.size > 1;
+    let sampleFlagsPresent = !firstSampleFlagsPresent && uniqueSampleFlags.size > 1;
+    let sampleCompositionTimeOffsetsPresent = uniqueSampleCompositionTimeOffsets.size > 1 || [...uniqueSampleCompositionTimeOffsets].some((x) => x !== 0);
+    let flags = 0;
+    flags |= 1;
+    flags |= 4 * +firstSampleFlagsPresent;
+    flags |= 256 * +sampleDurationPresent;
+    flags |= 512 * +sampleSizePresent;
+    flags |= 1024 * +sampleFlagsPresent;
+    flags |= 2048 * +sampleCompositionTimeOffsetsPresent;
+    return fullBox("trun", 1, flags, [
+      u32(track.currentChunk.samples.length),
+      // Sample count
+      u32(track.currentChunk.offset - track.currentChunk.moofOffset || 0),
+      // Data offset
+      firstSampleFlagsPresent ? u32(allSampleFlags[0]) : [],
+      track.currentChunk.samples.map((_, i) => [
+        sampleDurationPresent ? u32(allSampleDurations[i]) : [],
+        // Sample duration
+        sampleSizePresent ? u32(allSampleSizes[i]) : [],
+        // Sample size
+        sampleFlagsPresent ? u32(allSampleFlags[i]) : [],
+        // Sample flags
+        // Sample composition time offsets
+        sampleCompositionTimeOffsetsPresent ? i32(allSampleCompositionTimeOffsets[i]) : []
+      ])
+    ]);
+  };
+  var mfra = (tracks) => {
+    return box("mfra", null, [
+      ...tracks.map(tfra),
+      mfro()
+    ]);
+  };
+  var tfra = (track, trackIndex) => {
+    let version = 1;
+    return fullBox("tfra", version, 0, [
+      u32(track.id),
+      // Track ID
+      u32(63),
+      // This specifies that traf number, trun number and sample number are 32-bit ints
+      u32(track.finalizedChunks.length),
+      // Number of entries
+      track.finalizedChunks.map((chunk) => [
+        u64(intoTimescale(chunk.startTimestamp, track.timescale)),
+        // Time
+        u64(chunk.moofOffset),
+        // moof offset
+        u32(trackIndex + 1),
+        // traf number
+        u32(1),
+        // trun number
+        u32(1)
+        // Sample number
+      ])
+    ]);
+  };
+  var mfro = () => {
+    return fullBox("mfro", 0, 0, [
+      // This value needs to be overwritten manually from the outside, where the actual size of the enclosing mfra box
+      // is known
+      u32(0)
+      // Size
+    ]);
+  };
+  var VIDEO_CODEC_TO_BOX_NAME = {
+    "avc": "avc1",
+    "hevc": "hvc1",
+    "vp9": "vp09",
+    "av1": "av01"
+  };
+  var VIDEO_CODEC_TO_CONFIGURATION_BOX = {
+    "avc": avcC,
+    "hevc": hvcC,
+    "vp9": vpcC,
+    "av1": av1C
+  };
+  var AUDIO_CODEC_TO_BOX_NAME = {
+    "aac": "mp4a",
+    "opus": "Opus"
+  };
+  var AUDIO_CODEC_TO_CONFIGURATION_BOX = {
+    "aac": esds,
+    "opus": dOps
+  };
+
+  // src/target.ts
+  var isTarget = Symbol("isTarget");
+  var Target = class {
+  };
+  isTarget;
+  var ArrayBufferTarget = class extends Target {
+    constructor() {
+      super(...arguments);
+      this.buffer = null;
+    }
+  };
+  var StreamTarget = class extends Target {
+    constructor(options) {
+      super();
+      this.options = options;
+      if (typeof options !== "object") {
+        throw new TypeError("StreamTarget requires an options object to be passed to its constructor.");
+      }
+      if (options.onData) {
+        if (typeof options.onData !== "function") {
+          throw new TypeError("options.onData, when provided, must be a function.");
+        }
+        if (options.onData.length < 2) {
+          throw new TypeError(
+            "options.onData, when provided, must be a function that takes in at least two arguments (data and position). Ignoring the position argument, which specifies the byte offset at which the data is to be written, can lead to broken outputs."
+          );
+        }
+      }
+      if (options.chunked !== void 0 && typeof options.chunked !== "boolean") {
+        throw new TypeError("options.chunked, when provided, must be a boolean.");
+      }
+      if (options.chunkSize !== void 0 && (!Number.isInteger(options.chunkSize) || options.chunkSize < 1024)) {
+        throw new TypeError("options.chunkSize, when provided, must be an integer and not smaller than 1024.");
+      }
+    }
+  };
+  var FileSystemWritableFileStreamTarget = class extends Target {
+    constructor(stream, options) {
+      super();
+      this.stream = stream;
+      this.options = options;
+      if (!(stream instanceof FileSystemWritableFileStream)) {
+        throw new TypeError("FileSystemWritableFileStreamTarget requires a FileSystemWritableFileStream instance.");
+      }
+      if (options !== void 0 && typeof options !== "object") {
+        throw new TypeError("FileSystemWritableFileStreamTarget's options, when provided, must be an object.");
+      }
+      if (options) {
+        if (options.chunkSize !== void 0 && (!Number.isInteger(options.chunkSize) || options.chunkSize <= 0)) {
+          throw new TypeError("options.chunkSize, when provided, must be a positive integer");
+        }
+      }
+    }
+  };
+
+  // src/writer.ts
+  var _helper, _helperView;
+  var Writer = class {
+    constructor() {
+      this.pos = 0;
+      __privateAdd(this, _helper, new Uint8Array(8));
+      __privateAdd(this, _helperView, new DataView(__privateGet(this, _helper).buffer));
+      /**
+       * Stores the position from the start of the file to where boxes elements have been written. This is used to
+       * rewrite/edit elements that were already added before, and to measure sizes of things.
+       */
+      this.offsets = /* @__PURE__ */ new WeakMap();
+    }
+    /** Sets the current position for future writes to a new one. */
+    seek(newPos) {
+      this.pos = newPos;
+    }
+    writeU32(value) {
+      __privateGet(this, _helperView).setUint32(0, value, false);
+      this.write(__privateGet(this, _helper).subarray(0, 4));
+    }
+    writeU64(value) {
+      __privateGet(this, _helperView).setUint32(0, Math.floor(value / 2 ** 32), false);
+      __privateGet(this, _helperView).setUint32(4, value, false);
+      this.write(__privateGet(this, _helper).subarray(0, 8));
+    }
+    writeAscii(text) {
+      for (let i = 0; i < text.length; i++) {
+        __privateGet(this, _helperView).setUint8(i % 8, text.charCodeAt(i));
+        if (i % 8 === 7)
+          this.write(__privateGet(this, _helper));
+      }
+      if (text.length % 8 !== 0) {
+        this.write(__privateGet(this, _helper).subarray(0, text.length % 8));
+      }
+    }
+    writeBox(box2) {
+      this.offsets.set(box2, this.pos);
+      if (box2.contents && !box2.children) {
+        this.writeBoxHeader(box2, box2.size ?? box2.contents.byteLength + 8);
+        this.write(box2.contents);
+      } else {
+        let startPos = this.pos;
+        this.writeBoxHeader(box2, 0);
+        if (box2.contents)
+          this.write(box2.contents);
+        if (box2.children) {
+          for (let child of box2.children)
+            if (child)
+              this.writeBox(child);
+        }
+        let endPos = this.pos;
+        let size = box2.size ?? endPos - startPos;
+        this.seek(startPos);
+        this.writeBoxHeader(box2, size);
+        this.seek(endPos);
+      }
+    }
+    writeBoxHeader(box2, size) {
+      this.writeU32(box2.largeSize ? 1 : size);
+      this.writeAscii(box2.type);
+      if (box2.largeSize)
+        this.writeU64(size);
+    }
+    measureBoxHeader(box2) {
+      return 8 + (box2.largeSize ? 8 : 0);
+    }
+    patchBox(box2) {
+      let endPos = this.pos;
+      this.seek(this.offsets.get(box2));
+      this.writeBox(box2);
+      this.seek(endPos);
+    }
+    measureBox(box2) {
+      if (box2.contents && !box2.children) {
+        let headerSize = this.measureBoxHeader(box2);
+        return headerSize + box2.contents.byteLength;
+      } else {
+        let result = this.measureBoxHeader(box2);
+        if (box2.contents)
+          result += box2.contents.byteLength;
+        if (box2.children) {
+          for (let child of box2.children)
+            if (child)
+              result += this.measureBox(child);
+        }
+        return result;
+      }
+    }
+  };
+  _helper = new WeakMap();
+  _helperView = new WeakMap();
+  var _target, _buffer, _bytes, _maxPos, _ensureSize, ensureSize_fn;
+  var ArrayBufferTargetWriter = class extends Writer {
+    constructor(target) {
+      super();
+      __privateAdd(this, _ensureSize);
+      __privateAdd(this, _target, void 0);
+      __privateAdd(this, _buffer, new ArrayBuffer(2 ** 16));
+      __privateAdd(this, _bytes, new Uint8Array(__privateGet(this, _buffer)));
+      __privateAdd(this, _maxPos, 0);
+      __privateSet(this, _target, target);
+    }
+    write(data) {
+      __privateMethod(this, _ensureSize, ensureSize_fn).call(this, this.pos + data.byteLength);
+      __privateGet(this, _bytes).set(data, this.pos);
+      this.pos += data.byteLength;
+      __privateSet(this, _maxPos, Math.max(__privateGet(this, _maxPos), this.pos));
+    }
+    finalize() {
+      __privateMethod(this, _ensureSize, ensureSize_fn).call(this, this.pos);
+      __privateGet(this, _target).buffer = __privateGet(this, _buffer).slice(0, Math.max(__privateGet(this, _maxPos), this.pos));
+    }
+  };
+  _target = new WeakMap();
+  _buffer = new WeakMap();
+  _bytes = new WeakMap();
+  _maxPos = new WeakMap();
+  _ensureSize = new WeakSet();
+  ensureSize_fn = function(size) {
+    let newLength = __privateGet(this, _buffer).byteLength;
+    while (newLength < size)
+      newLength *= 2;
+    if (newLength === __privateGet(this, _buffer).byteLength)
+      return;
+    let newBuffer = new ArrayBuffer(newLength);
+    let newBytes = new Uint8Array(newBuffer);
+    newBytes.set(__privateGet(this, _bytes), 0);
+    __privateSet(this, _buffer, newBuffer);
+    __privateSet(this, _bytes, newBytes);
+  };
+  var DEFAULT_CHUNK_SIZE = 2 ** 24;
+  var MAX_CHUNKS_AT_ONCE = 2;
+  var _target2, _sections, _chunked, _chunkSize, _chunks, _writeDataIntoChunks, writeDataIntoChunks_fn, _insertSectionIntoChunk, insertSectionIntoChunk_fn, _createChunk, createChunk_fn, _flushChunks, flushChunks_fn;
+  var StreamTargetWriter = class extends Writer {
+    constructor(target) {
+      super();
+      __privateAdd(this, _writeDataIntoChunks);
+      __privateAdd(this, _insertSectionIntoChunk);
+      __privateAdd(this, _createChunk);
+      __privateAdd(this, _flushChunks);
+      __privateAdd(this, _target2, void 0);
+      __privateAdd(this, _sections, []);
+      __privateAdd(this, _chunked, void 0);
+      __privateAdd(this, _chunkSize, void 0);
+      /**
+       * The data is divided up into fixed-size chunks, whose contents are first filled in RAM and then flushed out.
+       * A chunk is flushed if all of its contents have been written.
+       */
+      __privateAdd(this, _chunks, []);
+      __privateSet(this, _target2, target);
+      __privateSet(this, _chunked, target.options?.chunked ?? false);
+      __privateSet(this, _chunkSize, target.options?.chunkSize ?? DEFAULT_CHUNK_SIZE);
+    }
+    write(data) {
+      __privateGet(this, _sections).push({
+        data: data.slice(),
+        start: this.pos
+      });
+      this.pos += data.byteLength;
+    }
+    flush() {
+      if (__privateGet(this, _sections).length === 0)
+        return;
+      let chunks = [];
+      let sorted = [...__privateGet(this, _sections)].sort((a, b) => a.start - b.start);
+      chunks.push({
+        start: sorted[0].start,
+        size: sorted[0].data.byteLength
+      });
+      for (let i = 1; i < sorted.length; i++) {
+        let lastChunk = chunks[chunks.length - 1];
+        let section = sorted[i];
+        if (section.start <= lastChunk.start + lastChunk.size) {
+          lastChunk.size = Math.max(lastChunk.size, section.start + section.data.byteLength - lastChunk.start);
+        } else {
+          chunks.push({
+            start: section.start,
+            size: section.data.byteLength
+          });
+        }
+      }
+      for (let chunk of chunks) {
+        chunk.data = new Uint8Array(chunk.size);
+        for (let section of __privateGet(this, _sections)) {
+          if (chunk.start <= section.start && section.start < chunk.start + chunk.size) {
+            chunk.data.set(section.data, section.start - chunk.start);
+          }
+        }
+        if (__privateGet(this, _chunked)) {
+          __privateMethod(this, _writeDataIntoChunks, writeDataIntoChunks_fn).call(this, chunk.data, chunk.start);
+          __privateMethod(this, _flushChunks, flushChunks_fn).call(this);
+        } else {
+          __privateGet(this, _target2).options.onData?.(chunk.data, chunk.start);
+        }
+      }
+      __privateGet(this, _sections).length = 0;
+    }
+    finalize() {
+      if (__privateGet(this, _chunked)) {
+        __privateMethod(this, _flushChunks, flushChunks_fn).call(this, true);
+      }
+    }
+  };
+  _target2 = new WeakMap();
+  _sections = new WeakMap();
+  _chunked = new WeakMap();
+  _chunkSize = new WeakMap();
+  _chunks = new WeakMap();
+  _writeDataIntoChunks = new WeakSet();
+  writeDataIntoChunks_fn = function(data, position) {
+    let chunkIndex = __privateGet(this, _chunks).findIndex((x) => x.start <= position && position < x.start + __privateGet(this, _chunkSize));
+    if (chunkIndex === -1)
+      chunkIndex = __privateMethod(this, _createChunk, createChunk_fn).call(this, position);
+    let chunk = __privateGet(this, _chunks)[chunkIndex];
+    let relativePosition = position - chunk.start;
+    let toWrite = data.subarray(0, Math.min(__privateGet(this, _chunkSize) - relativePosition, data.byteLength));
+    chunk.data.set(toWrite, relativePosition);
+    let section = {
+      start: relativePosition,
+      end: relativePosition + toWrite.byteLength
+    };
+    __privateMethod(this, _insertSectionIntoChunk, insertSectionIntoChunk_fn).call(this, chunk, section);
+    if (chunk.written[0].start === 0 && chunk.written[0].end === __privateGet(this, _chunkSize)) {
+      chunk.shouldFlush = true;
+    }
+    if (__privateGet(this, _chunks).length > MAX_CHUNKS_AT_ONCE) {
+      for (let i = 0; i < __privateGet(this, _chunks).length - 1; i++) {
+        __privateGet(this, _chunks)[i].shouldFlush = true;
+      }
+      __privateMethod(this, _flushChunks, flushChunks_fn).call(this);
+    }
+    if (toWrite.byteLength < data.byteLength) {
+      __privateMethod(this, _writeDataIntoChunks, writeDataIntoChunks_fn).call(this, data.subarray(toWrite.byteLength), position + toWrite.byteLength);
+    }
+  };
+  _insertSectionIntoChunk = new WeakSet();
+  insertSectionIntoChunk_fn = function(chunk, section) {
+    let low = 0;
+    let high = chunk.written.length - 1;
+    let index = -1;
+    while (low <= high) {
+      let mid = Math.floor(low + (high - low + 1) / 2);
+      if (chunk.written[mid].start <= section.start) {
+        low = mid + 1;
+        index = mid;
+      } else {
+        high = mid - 1;
+      }
+    }
+    chunk.written.splice(index + 1, 0, section);
+    if (index === -1 || chunk.written[index].end < section.start)
+      index++;
+    while (index < chunk.written.length - 1 && chunk.written[index].end >= chunk.written[index + 1].start) {
+      chunk.written[index].end = Math.max(chunk.written[index].end, chunk.written[index + 1].end);
+      chunk.written.splice(index + 1, 1);
+    }
+  };
+  _createChunk = new WeakSet();
+  createChunk_fn = function(includesPosition) {
+    let start = Math.floor(includesPosition / __privateGet(this, _chunkSize)) * __privateGet(this, _chunkSize);
+    let chunk = {
+      start,
+      data: new Uint8Array(__privateGet(this, _chunkSize)),
+      written: [],
+      shouldFlush: false
+    };
+    __privateGet(this, _chunks).push(chunk);
+    __privateGet(this, _chunks).sort((a, b) => a.start - b.start);
+    return __privateGet(this, _chunks).indexOf(chunk);
+  };
+  _flushChunks = new WeakSet();
+  flushChunks_fn = function(force = false) {
+    for (let i = 0; i < __privateGet(this, _chunks).length; i++) {
+      let chunk = __privateGet(this, _chunks)[i];
+      if (!chunk.shouldFlush && !force)
+        continue;
+      for (let section of chunk.written) {
+        __privateGet(this, _target2).options.onData?.(
+          chunk.data.subarray(section.start, section.end),
+          chunk.start + section.start
+        );
+      }
+      __privateGet(this, _chunks).splice(i--, 1);
+    }
+  };
+  var FileSystemWritableFileStreamTargetWriter = class extends StreamTargetWriter {
+    constructor(target) {
+      super(new StreamTarget({
+        onData: (data, position) => target.stream.write({
+          type: "write",
+          data,
+          position
+        }),
+        chunked: true,
+        chunkSize: target.options?.chunkSize
+      }));
+    }
+  };
+
+  // src/muxer.ts
+  var GLOBAL_TIMESCALE = 1e3;
+  var SUPPORTED_VIDEO_CODECS = ["avc", "hevc", "vp9", "av1"];
+  var SUPPORTED_AUDIO_CODECS = ["aac", "opus"];
+  var TIMESTAMP_OFFSET = 2082844800;
+  var FIRST_TIMESTAMP_BEHAVIORS = ["strict", "offset", "cross-track-offset"];
+  var _options, _writer, _ftypSize, _mdat, _videoTrack, _audioTrack, _creationTime, _finalizedChunks, _nextFragmentNumber, _videoSampleQueue, _audioSampleQueue, _finalized, _validateOptions, validateOptions_fn, _writeHeader, writeHeader_fn, _computeMoovSizeUpperBound, computeMoovSizeUpperBound_fn, _prepareTracks, prepareTracks_fn, _generateMpeg4AudioSpecificConfig, generateMpeg4AudioSpecificConfig_fn, _createSampleForTrack, createSampleForTrack_fn, _addSampleToTrack, addSampleToTrack_fn, _validateTimestamp, validateTimestamp_fn, _finalizeCurrentChunk, finalizeCurrentChunk_fn, _finalizeFragment, finalizeFragment_fn, _maybeFlushStreamingTargetWriter, maybeFlushStreamingTargetWriter_fn, _ensureNotFinalized, ensureNotFinalized_fn;
+  var Muxer = class {
+    constructor(options) {
+      __privateAdd(this, _validateOptions);
+      __privateAdd(this, _writeHeader);
+      __privateAdd(this, _computeMoovSizeUpperBound);
+      __privateAdd(this, _prepareTracks);
+      // https://wiki.multimedia.cx/index.php/MPEG-4_Audio
+      __privateAdd(this, _generateMpeg4AudioSpecificConfig);
+      __privateAdd(this, _createSampleForTrack);
+      __privateAdd(this, _addSampleToTrack);
+      __privateAdd(this, _validateTimestamp);
+      __privateAdd(this, _finalizeCurrentChunk);
+      __privateAdd(this, _finalizeFragment);
+      __privateAdd(this, _maybeFlushStreamingTargetWriter);
+      __privateAdd(this, _ensureNotFinalized);
+      __privateAdd(this, _options, void 0);
+      __privateAdd(this, _writer, void 0);
+      __privateAdd(this, _ftypSize, void 0);
+      __privateAdd(this, _mdat, void 0);
+      __privateAdd(this, _videoTrack, null);
+      __privateAdd(this, _audioTrack, null);
+      __privateAdd(this, _creationTime, Math.floor(Date.now() / 1e3) + TIMESTAMP_OFFSET);
+      __privateAdd(this, _finalizedChunks, []);
+      // Fields for fragmented MP4:
+      __privateAdd(this, _nextFragmentNumber, 1);
+      __privateAdd(this, _videoSampleQueue, []);
+      __privateAdd(this, _audioSampleQueue, []);
+      __privateAdd(this, _finalized, false);
+      __privateMethod(this, _validateOptions, validateOptions_fn).call(this, options);
+      options.video = deepClone(options.video);
+      options.audio = deepClone(options.audio);
+      options.fastStart = deepClone(options.fastStart);
+      this.target = options.target;
+      __privateSet(this, _options, {
+        firstTimestampBehavior: "strict",
+        ...options
+      });
+      if (options.target instanceof ArrayBufferTarget) {
+        __privateSet(this, _writer, new ArrayBufferTargetWriter(options.target));
+      } else if (options.target instanceof StreamTarget) {
+        __privateSet(this, _writer, new StreamTargetWriter(options.target));
+      } else if (options.target instanceof FileSystemWritableFileStreamTarget) {
+        __privateSet(this, _writer, new FileSystemWritableFileStreamTargetWriter(options.target));
+      } else {
+        throw new Error(`Invalid target: ${options.target}`);
+      }
+      __privateMethod(this, _prepareTracks, prepareTracks_fn).call(this);
+      __privateMethod(this, _writeHeader, writeHeader_fn).call(this);
+    }
+    addVideoChunk(sample, meta, timestamp, compositionTimeOffset) {
+      if (!(sample instanceof EncodedVideoChunk)) {
+        throw new TypeError("addVideoChunk's first argument (sample) must be of type EncodedVideoChunk.");
+      }
+      if (meta && typeof meta !== "object") {
+        throw new TypeError("addVideoChunk's second argument (meta), when provided, must be an object.");
+      }
+      if (timestamp !== void 0 && (!Number.isFinite(timestamp) || timestamp < 0)) {
+        throw new TypeError(
+          "addVideoChunk's third argument (timestamp), when provided, must be a non-negative real number."
+        );
+      }
+      if (compositionTimeOffset !== void 0 && !Number.isFinite(compositionTimeOffset)) {
+        throw new TypeError(
+          "addVideoChunk's fourth argument (compositionTimeOffset), when provided, must be a real number."
+        );
+      }
+      let data = new Uint8Array(sample.byteLength);
+      sample.copyTo(data);
+      this.addVideoChunkRaw(
+        data,
+        sample.type,
+        timestamp ?? sample.timestamp,
+        sample.duration,
+        meta,
+        compositionTimeOffset
+      );
+    }
+    addVideoChunkRaw(data, type, timestamp, duration, meta, compositionTimeOffset) {
+      if (!(data instanceof Uint8Array)) {
+        throw new TypeError("addVideoChunkRaw's first argument (data) must be an instance of Uint8Array.");
+      }
+      if (type !== "key" && type !== "delta") {
+        throw new TypeError("addVideoChunkRaw's second argument (type) must be either 'key' or 'delta'.");
+      }
+      if (!Number.isFinite(timestamp) || timestamp < 0) {
+        throw new TypeError("addVideoChunkRaw's third argument (timestamp) must be a non-negative real number.");
+      }
+      if (!Number.isFinite(duration) || duration < 0) {
+        throw new TypeError("addVideoChunkRaw's fourth argument (duration) must be a non-negative real number.");
+      }
+      if (meta && typeof meta !== "object") {
+        throw new TypeError("addVideoChunkRaw's fifth argument (meta), when provided, must be an object.");
+      }
+      if (compositionTimeOffset !== void 0 && !Number.isFinite(compositionTimeOffset)) {
+        throw new TypeError(
+          "addVideoChunkRaw's sixth argument (compositionTimeOffset), when provided, must be a real number."
+        );
+      }
+      __privateMethod(this, _ensureNotFinalized, ensureNotFinalized_fn).call(this);
+      if (!__privateGet(this, _options).video)
+        throw new Error("No video track declared.");
+      if (typeof __privateGet(this, _options).fastStart === "object" && __privateGet(this, _videoTrack).samples.length === __privateGet(this, _options).fastStart.expectedVideoChunks) {
+        throw new Error(`Cannot add more video chunks than specified in 'fastStart' (${__privateGet(this, _options).fastStart.expectedVideoChunks}).`);
+      }
+      let videoSample = __privateMethod(this, _createSampleForTrack, createSampleForTrack_fn).call(this, __privateGet(this, _videoTrack), data, type, timestamp, duration, meta, compositionTimeOffset);
+      if (__privateGet(this, _options).fastStart === "fragmented" && __privateGet(this, _audioTrack)) {
+        while (__privateGet(this, _audioSampleQueue).length > 0 && __privateGet(this, _audioSampleQueue)[0].decodeTimestamp <= videoSample.decodeTimestamp) {
+          let audioSample = __privateGet(this, _audioSampleQueue).shift();
+          __privateMethod(this, _addSampleToTrack, addSampleToTrack_fn).call(this, __privateGet(this, _audioTrack), audioSample);
+        }
+        if (videoSample.decodeTimestamp <= __privateGet(this, _audioTrack).lastDecodeTimestamp) {
+          __privateMethod(this, _addSampleToTrack, addSampleToTrack_fn).call(this, __privateGet(this, _videoTrack), videoSample);
+        } else {
+          __privateGet(this, _videoSampleQueue).push(videoSample);
+        }
+      } else {
+        __privateMethod(this, _addSampleToTrack, addSampleToTrack_fn).call(this, __privateGet(this, _videoTrack), videoSample);
+      }
+    }
+    addAudioChunk(sample, meta, timestamp) {
+      if (!(sample instanceof EncodedAudioChunk)) {
+        throw new TypeError("addAudioChunk's first argument (sample) must be of type EncodedAudioChunk.");
+      }
+      if (meta && typeof meta !== "object") {
+        throw new TypeError("addAudioChunk's second argument (meta), when provided, must be an object.");
+      }
+      if (timestamp !== void 0 && (!Number.isFinite(timestamp) || timestamp < 0)) {
+        throw new TypeError(
+          "addAudioChunk's third argument (timestamp), when provided, must be a non-negative real number."
+        );
+      }
+      let data = new Uint8Array(sample.byteLength);
+      sample.copyTo(data);
+      this.addAudioChunkRaw(data, sample.type, timestamp ?? sample.timestamp, sample.duration, meta);
+    }
+    addAudioChunkRaw(data, type, timestamp, duration, meta) {
+      if (!(data instanceof Uint8Array)) {
+        throw new TypeError("addAudioChunkRaw's first argument (data) must be an instance of Uint8Array.");
+      }
+      if (type !== "key" && type !== "delta") {
+        throw new TypeError("addAudioChunkRaw's second argument (type) must be either 'key' or 'delta'.");
+      }
+      if (!Number.isFinite(timestamp) || timestamp < 0) {
+        throw new TypeError("addAudioChunkRaw's third argument (timestamp) must be a non-negative real number.");
+      }
+      if (!Number.isFinite(duration) || duration < 0) {
+        throw new TypeError("addAudioChunkRaw's fourth argument (duration) must be a non-negative real number.");
+      }
+      if (meta && typeof meta !== "object") {
+        throw new TypeError("addAudioChunkRaw's fifth argument (meta), when provided, must be an object.");
+      }
+      __privateMethod(this, _ensureNotFinalized, ensureNotFinalized_fn).call(this);
+      if (!__privateGet(this, _options).audio)
+        throw new Error("No audio track declared.");
+      if (typeof __privateGet(this, _options).fastStart === "object" && __privateGet(this, _audioTrack).samples.length === __privateGet(this, _options).fastStart.expectedAudioChunks) {
+        throw new Error(`Cannot add more audio chunks than specified in 'fastStart' (${__privateGet(this, _options).fastStart.expectedAudioChunks}).`);
+      }
+      let audioSample = __privateMethod(this, _createSampleForTrack, createSampleForTrack_fn).call(this, __privateGet(this, _audioTrack), data, type, timestamp, duration, meta);
+      if (__privateGet(this, _options).fastStart === "fragmented" && __privateGet(this, _videoTrack)) {
+        while (__privateGet(this, _videoSampleQueue).length > 0 && __privateGet(this, _videoSampleQueue)[0].decodeTimestamp <= audioSample.decodeTimestamp) {
+          let videoSample = __privateGet(this, _videoSampleQueue).shift();
+          __privateMethod(this, _addSampleToTrack, addSampleToTrack_fn).call(this, __privateGet(this, _videoTrack), videoSample);
+        }
+        if (audioSample.decodeTimestamp <= __privateGet(this, _videoTrack).lastDecodeTimestamp) {
+          __privateMethod(this, _addSampleToTrack, addSampleToTrack_fn).call(this, __privateGet(this, _audioTrack), audioSample);
+        } else {
+          __privateGet(this, _audioSampleQueue).push(audioSample);
+        }
+      } else {
+        __privateMethod(this, _addSampleToTrack, addSampleToTrack_fn).call(this, __privateGet(this, _audioTrack), audioSample);
+      }
+    }
+    /** Finalizes the file, making it ready for use. Must be called after all video and audio chunks have been added. */
+    finalize() {
+      if (__privateGet(this, _finalized)) {
+        throw new Error("Cannot finalize a muxer more than once.");
+      }
+      if (__privateGet(this, _options).fastStart === "fragmented") {
+        for (let videoSample of __privateGet(this, _videoSampleQueue))
+          __privateMethod(this, _addSampleToTrack, addSampleToTrack_fn).call(this, __privateGet(this, _videoTrack), videoSample);
+        for (let audioSample of __privateGet(this, _audioSampleQueue))
+          __privateMethod(this, _addSampleToTrack, addSampleToTrack_fn).call(this, __privateGet(this, _audioTrack), audioSample);
+        __privateMethod(this, _finalizeFragment, finalizeFragment_fn).call(this, false);
+      } else {
+        if (__privateGet(this, _videoTrack))
+          __privateMethod(this, _finalizeCurrentChunk, finalizeCurrentChunk_fn).call(this, __privateGet(this, _videoTrack));
+        if (__privateGet(this, _audioTrack))
+          __privateMethod(this, _finalizeCurrentChunk, finalizeCurrentChunk_fn).call(this, __privateGet(this, _audioTrack));
+      }
+      let tracks = [__privateGet(this, _videoTrack), __privateGet(this, _audioTrack)].filter(Boolean);
+      if (__privateGet(this, _options).fastStart === "in-memory") {
+        let mdatSize;
+        for (let i = 0; i < 2; i++) {
+          let movieBox2 = moov(tracks, __privateGet(this, _creationTime));
+          let movieBoxSize = __privateGet(this, _writer).measureBox(movieBox2);
+          mdatSize = __privateGet(this, _writer).measureBox(__privateGet(this, _mdat));
+          let currentChunkPos = __privateGet(this, _writer).pos + movieBoxSize + mdatSize;
+          for (let chunk of __privateGet(this, _finalizedChunks)) {
+            chunk.offset = currentChunkPos;
+            for (let { data } of chunk.samples) {
+              currentChunkPos += data.byteLength;
+              mdatSize += data.byteLength;
+            }
+          }
+          if (currentChunkPos < 2 ** 32)
+            break;
+          if (mdatSize >= 2 ** 32)
+            __privateGet(this, _mdat).largeSize = true;
+        }
+        let movieBox = moov(tracks, __privateGet(this, _creationTime));
+        __privateGet(this, _writer).writeBox(movieBox);
+        __privateGet(this, _mdat).size = mdatSize;
+        __privateGet(this, _writer).writeBox(__privateGet(this, _mdat));
+        for (let chunk of __privateGet(this, _finalizedChunks)) {
+          for (let sample of chunk.samples) {
+            __privateGet(this, _writer).write(sample.data);
+            sample.data = null;
+          }
+        }
+      } else if (__privateGet(this, _options).fastStart === "fragmented") {
+        let startPos = __privateGet(this, _writer).pos;
+        let mfraBox = mfra(tracks);
+        __privateGet(this, _writer).writeBox(mfraBox);
+        let mfraBoxSize = __privateGet(this, _writer).pos - startPos;
+        __privateGet(this, _writer).seek(__privateGet(this, _writer).pos - 4);
+        __privateGet(this, _writer).writeU32(mfraBoxSize);
+      } else {
+        let mdatPos = __privateGet(this, _writer).offsets.get(__privateGet(this, _mdat));
+        let mdatSize = __privateGet(this, _writer).pos - mdatPos;
+        __privateGet(this, _mdat).size = mdatSize;
+        __privateGet(this, _mdat).largeSize = mdatSize >= 2 ** 32;
+        __privateGet(this, _writer).patchBox(__privateGet(this, _mdat));
+        let movieBox = moov(tracks, __privateGet(this, _creationTime));
+        if (typeof __privateGet(this, _options).fastStart === "object") {
+          __privateGet(this, _writer).seek(__privateGet(this, _ftypSize));
+          __privateGet(this, _writer).writeBox(movieBox);
+          let remainingBytes = mdatPos - __privateGet(this, _writer).pos;
+          __privateGet(this, _writer).writeBox(free(remainingBytes));
+        } else {
+          __privateGet(this, _writer).writeBox(movieBox);
+        }
+      }
+      __privateMethod(this, _maybeFlushStreamingTargetWriter, maybeFlushStreamingTargetWriter_fn).call(this);
+      __privateGet(this, _writer).finalize();
+      __privateSet(this, _finalized, true);
+    }
+  };
+  _options = new WeakMap();
+  _writer = new WeakMap();
+  _ftypSize = new WeakMap();
+  _mdat = new WeakMap();
+  _videoTrack = new WeakMap();
+  _audioTrack = new WeakMap();
+  _creationTime = new WeakMap();
+  _finalizedChunks = new WeakMap();
+  _nextFragmentNumber = new WeakMap();
+  _videoSampleQueue = new WeakMap();
+  _audioSampleQueue = new WeakMap();
+  _finalized = new WeakMap();
+  _validateOptions = new WeakSet();
+  validateOptions_fn = function(options) {
+    if (typeof options !== "object") {
+      throw new TypeError("The muxer requires an options object to be passed to its constructor.");
+    }
+    if (!(options.target instanceof Target)) {
+      throw new TypeError("The target must be provided and an instance of Target.");
+    }
+    if (options.video) {
+      if (!SUPPORTED_VIDEO_CODECS.includes(options.video.codec)) {
+        throw new TypeError(`Unsupported video codec: ${options.video.codec}`);
+      }
+      if (!Number.isInteger(options.video.width) || options.video.width <= 0) {
+        throw new TypeError(`Invalid video width: ${options.video.width}. Must be a positive integer.`);
+      }
+      if (!Number.isInteger(options.video.height) || options.video.height <= 0) {
+        throw new TypeError(`Invalid video height: ${options.video.height}. Must be a positive integer.`);
+      }
+      const videoRotation = options.video.rotation;
+      if (typeof videoRotation === "number" && ![0, 90, 180, 270].includes(videoRotation)) {
+        throw new TypeError(`Invalid video rotation: ${videoRotation}. Has to be 0, 90, 180 or 270.`);
+      } else if (Array.isArray(videoRotation) && (videoRotation.length !== 9 || videoRotation.some((value) => typeof value !== "number"))) {
+        throw new TypeError(`Invalid video transformation matrix: ${videoRotation.join()}`);
+      }
+      if (options.video.frameRate !== void 0 && (!Number.isInteger(options.video.frameRate) || options.video.frameRate <= 0)) {
+        throw new TypeError(
+          `Invalid video frame rate: ${options.video.frameRate}. Must be a positive integer.`
+        );
+      }
+    }
+    if (options.audio) {
+      if (!SUPPORTED_AUDIO_CODECS.includes(options.audio.codec)) {
+        throw new TypeError(`Unsupported audio codec: ${options.audio.codec}`);
+      }
+      if (!Number.isInteger(options.audio.numberOfChannels) || options.audio.numberOfChannels <= 0) {
+        throw new TypeError(
+          `Invalid number of audio channels: ${options.audio.numberOfChannels}. Must be a positive integer.`
+        );
+      }
+      if (!Number.isInteger(options.audio.sampleRate) || options.audio.sampleRate <= 0) {
+        throw new TypeError(
+          `Invalid audio sample rate: ${options.audio.sampleRate}. Must be a positive integer.`
+        );
+      }
+    }
+    if (options.firstTimestampBehavior && !FIRST_TIMESTAMP_BEHAVIORS.includes(options.firstTimestampBehavior)) {
+      throw new TypeError(`Invalid first timestamp behavior: ${options.firstTimestampBehavior}`);
+    }
+    if (typeof options.fastStart === "object") {
+      if (options.video) {
+        if (options.fastStart.expectedVideoChunks === void 0) {
+          throw new TypeError(`'fastStart' is an object but is missing property 'expectedVideoChunks'.`);
+        } else if (!Number.isInteger(options.fastStart.expectedVideoChunks) || options.fastStart.expectedVideoChunks < 0) {
+          throw new TypeError(`'expectedVideoChunks' must be a non-negative integer.`);
+        }
+      }
+      if (options.audio) {
+        if (options.fastStart.expectedAudioChunks === void 0) {
+          throw new TypeError(`'fastStart' is an object but is missing property 'expectedAudioChunks'.`);
+        } else if (!Number.isInteger(options.fastStart.expectedAudioChunks) || options.fastStart.expectedAudioChunks < 0) {
+          throw new TypeError(`'expectedAudioChunks' must be a non-negative integer.`);
+        }
+      }
+    } else if (![false, "in-memory", "fragmented"].includes(options.fastStart)) {
+      throw new TypeError(`'fastStart' option must be false, 'in-memory', 'fragmented' or an object.`);
+    }
+    if (options.minFragmentDuration !== void 0 && (!Number.isFinite(options.minFragmentDuration) || options.minFragmentDuration < 0)) {
+      throw new TypeError(`'minFragmentDuration' must be a non-negative number.`);
+    }
+  };
+  _writeHeader = new WeakSet();
+  writeHeader_fn = function() {
+    __privateGet(this, _writer).writeBox(ftyp({
+      holdsAvc: __privateGet(this, _options).video?.codec === "avc",
+      fragmented: __privateGet(this, _options).fastStart === "fragmented"
+    }));
+    __privateSet(this, _ftypSize, __privateGet(this, _writer).pos);
+    if (__privateGet(this, _options).fastStart === "in-memory") {
+      __privateSet(this, _mdat, mdat(false));
+    } else if (__privateGet(this, _options).fastStart === "fragmented") {
+    } else {
+      if (typeof __privateGet(this, _options).fastStart === "object") {
+        let moovSizeUpperBound = __privateMethod(this, _computeMoovSizeUpperBound, computeMoovSizeUpperBound_fn).call(this);
+        __privateGet(this, _writer).seek(__privateGet(this, _writer).pos + moovSizeUpperBound);
+      }
+      __privateSet(this, _mdat, mdat(true));
+      __privateGet(this, _writer).writeBox(__privateGet(this, _mdat));
+    }
+    __privateMethod(this, _maybeFlushStreamingTargetWriter, maybeFlushStreamingTargetWriter_fn).call(this);
+  };
+  _computeMoovSizeUpperBound = new WeakSet();
+  computeMoovSizeUpperBound_fn = function() {
+    if (typeof __privateGet(this, _options).fastStart !== "object")
+      return;
+    let upperBound = 0;
+    let sampleCounts = [
+      __privateGet(this, _options).fastStart.expectedVideoChunks,
+      __privateGet(this, _options).fastStart.expectedAudioChunks
+    ];
+    for (let n of sampleCounts) {
+      if (!n)
+        continue;
+      upperBound += (4 + 4) * Math.ceil(2 / 3 * n);
+      upperBound += 4 * n;
+      upperBound += (4 + 4 + 4) * Math.ceil(2 / 3 * n);
+      upperBound += 4 * n;
+      upperBound += 8 * n;
+    }
+    upperBound += 4096;
+    return upperBound;
+  };
+  _prepareTracks = new WeakSet();
+  prepareTracks_fn = function() {
+    if (__privateGet(this, _options).video) {
+      __privateSet(this, _videoTrack, {
+        id: 1,
+        info: {
+          type: "video",
+          codec: __privateGet(this, _options).video.codec,
+          width: __privateGet(this, _options).video.width,
+          height: __privateGet(this, _options).video.height,
+          rotation: __privateGet(this, _options).video.rotation ?? 0,
+          decoderConfig: null
+        },
+        // The fallback contains many common frame rates as factors
+        timescale: __privateGet(this, _options).video.frameRate ?? 57600,
+        samples: [],
+        finalizedChunks: [],
+        currentChunk: null,
+        firstDecodeTimestamp: void 0,
+        lastDecodeTimestamp: -1,
+        timeToSampleTable: [],
+        compositionTimeOffsetTable: [],
+        lastTimescaleUnits: null,
+        lastSample: null,
+        compactlyCodedChunkTable: []
+      });
+    }
+    if (__privateGet(this, _options).audio) {
+      __privateSet(this, _audioTrack, {
+        id: __privateGet(this, _options).video ? 2 : 1,
+        info: {
+          type: "audio",
+          codec: __privateGet(this, _options).audio.codec,
+          numberOfChannels: __privateGet(this, _options).audio.numberOfChannels,
+          sampleRate: __privateGet(this, _options).audio.sampleRate,
+          decoderConfig: null
+        },
+        timescale: __privateGet(this, _options).audio.sampleRate,
+        samples: [],
+        finalizedChunks: [],
+        currentChunk: null,
+        firstDecodeTimestamp: void 0,
+        lastDecodeTimestamp: -1,
+        timeToSampleTable: [],
+        compositionTimeOffsetTable: [],
+        lastTimescaleUnits: null,
+        lastSample: null,
+        compactlyCodedChunkTable: []
+      });
+      if (__privateGet(this, _options).audio.codec === "aac") {
+        let guessedCodecPrivate = __privateMethod(this, _generateMpeg4AudioSpecificConfig, generateMpeg4AudioSpecificConfig_fn).call(
+          this,
+          2,
+          // Object type for AAC-LC, since it's the most common
+          __privateGet(this, _options).audio.sampleRate,
+          __privateGet(this, _options).audio.numberOfChannels
+        );
+        __privateGet(this, _audioTrack).info.decoderConfig = {
+          codec: __privateGet(this, _options).audio.codec,
+          description: guessedCodecPrivate,
+          numberOfChannels: __privateGet(this, _options).audio.numberOfChannels,
+          sampleRate: __privateGet(this, _options).audio.sampleRate
+        };
+      }
+    }
+  };
+  _generateMpeg4AudioSpecificConfig = new WeakSet();
+  generateMpeg4AudioSpecificConfig_fn = function(objectType, sampleRate, numberOfChannels) {
+    let frequencyIndices = [96e3, 88200, 64e3, 48e3, 44100, 32e3, 24e3, 22050, 16e3, 12e3, 11025, 8e3, 7350];
+    let frequencyIndex = frequencyIndices.indexOf(sampleRate);
+    let channelConfig = numberOfChannels;
+    let configBits = "";
+    configBits += objectType.toString(2).padStart(5, "0");
+    configBits += frequencyIndex.toString(2).padStart(4, "0");
+    if (frequencyIndex === 15)
+      configBits += sampleRate.toString(2).padStart(24, "0");
+    configBits += channelConfig.toString(2).padStart(4, "0");
+    let paddingLength = Math.ceil(configBits.length / 8) * 8;
+    configBits = configBits.padEnd(paddingLength, "0");
+    let configBytes = new Uint8Array(configBits.length / 8);
+    for (let i = 0; i < configBits.length; i += 8) {
+      configBytes[i / 8] = parseInt(configBits.slice(i, i + 8), 2);
+    }
+    return configBytes;
+  };
+  _createSampleForTrack = new WeakSet();
+  createSampleForTrack_fn = function(track, data, type, timestamp, duration, meta, compositionTimeOffset) {
+    let presentationTimestampInSeconds = timestamp / 1e6;
+    let decodeTimestampInSeconds = (timestamp - (compositionTimeOffset ?? 0)) / 1e6;
+    let durationInSeconds = duration / 1e6;
+    let adjusted = __privateMethod(this, _validateTimestamp, validateTimestamp_fn).call(this, presentationTimestampInSeconds, decodeTimestampInSeconds, track);
+    presentationTimestampInSeconds = adjusted.presentationTimestamp;
+    decodeTimestampInSeconds = adjusted.decodeTimestamp;
+    if (meta?.decoderConfig) {
+      if (track.info.decoderConfig === null) {
+        track.info.decoderConfig = meta.decoderConfig;
+      } else {
+        Object.assign(track.info.decoderConfig, meta.decoderConfig);
+      }
+    }
+    let sample = {
+      presentationTimestamp: presentationTimestampInSeconds,
+      decodeTimestamp: decodeTimestampInSeconds,
+      duration: durationInSeconds,
+      data,
+      size: data.byteLength,
+      type,
+      // Will be refined once the next sample comes in
+      timescaleUnitsToNextSample: intoTimescale(durationInSeconds, track.timescale)
+    };
+    return sample;
+  };
+  _addSampleToTrack = new WeakSet();
+  addSampleToTrack_fn = function(track, sample) {
+    if (__privateGet(this, _options).fastStart !== "fragmented") {
+      track.samples.push(sample);
+    }
+    const sampleCompositionTimeOffset = intoTimescale(sample.presentationTimestamp - sample.decodeTimestamp, track.timescale);
+    if (track.lastTimescaleUnits !== null) {
+      let timescaleUnits = intoTimescale(sample.decodeTimestamp, track.timescale, false);
+      let delta = Math.round(timescaleUnits - track.lastTimescaleUnits);
+      track.lastTimescaleUnits += delta;
+      track.lastSample.timescaleUnitsToNextSample = delta;
+      if (__privateGet(this, _options).fastStart !== "fragmented") {
+        let lastTableEntry = last(track.timeToSampleTable);
+        if (lastTableEntry.sampleCount === 1) {
+          lastTableEntry.sampleDelta = delta;
+          lastTableEntry.sampleCount++;
+        } else if (lastTableEntry.sampleDelta === delta) {
+          lastTableEntry.sampleCount++;
+        } else {
+          lastTableEntry.sampleCount--;
+          track.timeToSampleTable.push({
+            sampleCount: 2,
+            sampleDelta: delta
+          });
+        }
+        const lastCompositionTimeOffsetTableEntry = last(track.compositionTimeOffsetTable);
+        if (lastCompositionTimeOffsetTableEntry.sampleCompositionTimeOffset === sampleCompositionTimeOffset) {
+          lastCompositionTimeOffsetTableEntry.sampleCount++;
+        } else {
+          track.compositionTimeOffsetTable.push({
+            sampleCount: 1,
+            sampleCompositionTimeOffset
+          });
+        }
+      }
+    } else {
+      track.lastTimescaleUnits = 0;
+      if (__privateGet(this, _options).fastStart !== "fragmented") {
+        track.timeToSampleTable.push({
+          sampleCount: 1,
+          sampleDelta: intoTimescale(sample.duration, track.timescale)
+        });
+        track.compositionTimeOffsetTable.push({
+          sampleCount: 1,
+          sampleCompositionTimeOffset
+        });
+      }
+    }
+    track.lastSample = sample;
+    let beginNewChunk = false;
+    if (!track.currentChunk) {
+      beginNewChunk = true;
+    } else {
+      let currentChunkDuration = sample.presentationTimestamp - track.currentChunk.startTimestamp;
+      if (__privateGet(this, _options).fastStart === "fragmented") {
+        let mostImportantTrack = __privateGet(this, _videoTrack) ?? __privateGet(this, _audioTrack);
+        const chunkDuration = __privateGet(this, _options).minFragmentDuration ?? 1;
+        if (track === mostImportantTrack && sample.type === "key" && currentChunkDuration >= chunkDuration) {
+          beginNewChunk = true;
+          __privateMethod(this, _finalizeFragment, finalizeFragment_fn).call(this);
+        }
+      } else {
+        beginNewChunk = currentChunkDuration >= 0.5;
+      }
+    }
+    if (beginNewChunk) {
+      if (track.currentChunk) {
+        __privateMethod(this, _finalizeCurrentChunk, finalizeCurrentChunk_fn).call(this, track);
+      }
+      track.currentChunk = {
+        startTimestamp: sample.presentationTimestamp,
+        samples: []
+      };
+    }
+    track.currentChunk.samples.push(sample);
+  };
+  _validateTimestamp = new WeakSet();
+  validateTimestamp_fn = function(presentationTimestamp, decodeTimestamp, track) {
+    const strictTimestampBehavior = __privateGet(this, _options).firstTimestampBehavior === "strict";
+    const noLastDecodeTimestamp = track.lastDecodeTimestamp === -1;
+    const timestampNonZero = decodeTimestamp !== 0;
+    if (strictTimestampBehavior && noLastDecodeTimestamp && timestampNonZero) {
+      throw new Error(
+        `The first chunk for your media track must have a timestamp of 0 (received DTS=${decodeTimestamp}).Non-zero first timestamps are often caused by directly piping frames or audio data from a MediaStreamTrack into the encoder. Their timestamps are typically relative to the age of thedocument, which is probably what you want.
+
+If you want to offset all timestamps of a track such that the first one is zero, set firstTimestampBehavior: 'offset' in the options.
+`
+      );
+    } else if (__privateGet(this, _options).firstTimestampBehavior === "offset" || __privateGet(this, _options).firstTimestampBehavior === "cross-track-offset") {
+      if (track.firstDecodeTimestamp === void 0) {
+        track.firstDecodeTimestamp = decodeTimestamp;
+      }
+      let baseDecodeTimestamp;
+      if (__privateGet(this, _options).firstTimestampBehavior === "offset") {
+        baseDecodeTimestamp = track.firstDecodeTimestamp;
+      } else {
+        baseDecodeTimestamp = Math.min(
+          __privateGet(this, _videoTrack)?.firstDecodeTimestamp ?? Infinity,
+          __privateGet(this, _audioTrack)?.firstDecodeTimestamp ?? Infinity
+        );
+      }
+      decodeTimestamp -= baseDecodeTimestamp;
+      presentationTimestamp -= baseDecodeTimestamp;
+    }
+    if (decodeTimestamp < track.lastDecodeTimestamp) {
+      throw new Error(
+        `Timestamps must be monotonically increasing (DTS went from ${track.lastDecodeTimestamp * 1e6} to ${decodeTimestamp * 1e6}).`
+      );
+    }
+    track.lastDecodeTimestamp = decodeTimestamp;
+    return { presentationTimestamp, decodeTimestamp };
+  };
+  _finalizeCurrentChunk = new WeakSet();
+  finalizeCurrentChunk_fn = function(track) {
+    if (__privateGet(this, _options).fastStart === "fragmented") {
+      throw new Error("Can't finalize individual chunks if 'fastStart' is set to 'fragmented'.");
+    }
+    if (!track.currentChunk)
+      return;
+    track.finalizedChunks.push(track.currentChunk);
+    __privateGet(this, _finalizedChunks).push(track.currentChunk);
+    if (track.compactlyCodedChunkTable.length === 0 || last(track.compactlyCodedChunkTable).samplesPerChunk !== track.currentChunk.samples.length) {
+      track.compactlyCodedChunkTable.push({
+        firstChunk: track.finalizedChunks.length,
+        // 1-indexed
+        samplesPerChunk: track.currentChunk.samples.length
+      });
+    }
+    if (__privateGet(this, _options).fastStart === "in-memory") {
+      track.currentChunk.offset = 0;
+      return;
+    }
+    track.currentChunk.offset = __privateGet(this, _writer).pos;
+    for (let sample of track.currentChunk.samples) {
+      __privateGet(this, _writer).write(sample.data);
+      sample.data = null;
+    }
+    __privateMethod(this, _maybeFlushStreamingTargetWriter, maybeFlushStreamingTargetWriter_fn).call(this);
+  };
+  _finalizeFragment = new WeakSet();
+  finalizeFragment_fn = function(flushStreamingWriter = true) {
+    if (__privateGet(this, _options).fastStart !== "fragmented") {
+      throw new Error("Can't finalize a fragment unless 'fastStart' is set to 'fragmented'.");
+    }
+    let tracks = [__privateGet(this, _videoTrack), __privateGet(this, _audioTrack)].filter((track) => track && track.currentChunk);
+    if (tracks.length === 0)
+      return;
+    let fragmentNumber = __privateWrapper(this, _nextFragmentNumber)._++;
+    if (fragmentNumber === 1) {
+      let movieBox = moov(tracks, __privateGet(this, _creationTime), true);
+      __privateGet(this, _writer).writeBox(movieBox);
+    }
+    let moofOffset = __privateGet(this, _writer).pos;
+    let moofBox = moof(fragmentNumber, tracks);
+    __privateGet(this, _writer).writeBox(moofBox);
+    {
+      let mdatBox = mdat(false);
+      let totalTrackSampleSize = 0;
+      for (let track of tracks) {
+        for (let sample of track.currentChunk.samples) {
+          totalTrackSampleSize += sample.size;
+        }
+      }
+      let mdatSize = __privateGet(this, _writer).measureBox(mdatBox) + totalTrackSampleSize;
+      if (mdatSize >= 2 ** 32) {
+        mdatBox.largeSize = true;
+        mdatSize = __privateGet(this, _writer).measureBox(mdatBox) + totalTrackSampleSize;
+      }
+      mdatBox.size = mdatSize;
+      __privateGet(this, _writer).writeBox(mdatBox);
+    }
+    for (let track of tracks) {
+      track.currentChunk.offset = __privateGet(this, _writer).pos;
+      track.currentChunk.moofOffset = moofOffset;
+      for (let sample of track.currentChunk.samples) {
+        __privateGet(this, _writer).write(sample.data);
+        sample.data = null;
+      }
+    }
+    let endPos = __privateGet(this, _writer).pos;
+    __privateGet(this, _writer).seek(__privateGet(this, _writer).offsets.get(moofBox));
+    let newMoofBox = moof(fragmentNumber, tracks);
+    __privateGet(this, _writer).writeBox(newMoofBox);
+    __privateGet(this, _writer).seek(endPos);
+    for (let track of tracks) {
+      track.finalizedChunks.push(track.currentChunk);
+      __privateGet(this, _finalizedChunks).push(track.currentChunk);
+      track.currentChunk = null;
+    }
+    if (flushStreamingWriter) {
+      __privateMethod(this, _maybeFlushStreamingTargetWriter, maybeFlushStreamingTargetWriter_fn).call(this);
+    }
+  };
+  _maybeFlushStreamingTargetWriter = new WeakSet();
+  maybeFlushStreamingTargetWriter_fn = function() {
+    if (__privateGet(this, _writer) instanceof StreamTargetWriter) {
+      __privateGet(this, _writer).flush();
+    }
+  };
+  _ensureNotFinalized = new WeakSet();
+  ensureNotFinalized_fn = function() {
+    if (__privateGet(this, _finalized)) {
+      throw new Error("Cannot add new video or audio chunks after the file has been finalized.");
+    }
+  };
+  return __toCommonJS(src_exports);
+})();
+if (typeof module === "object" && typeof module.exports === "object") Object.assign(module.exports, Mp4Muxer)
+
+</script>
+</head>
+<body>
+<header>
+  <h1>🎬 재창조 스튜디오 v3.1</h1>
+  <div class="tabs" id="tabs">
+    <div class="tab on" data-t="src"><span class="n">1</span>분석·재창조</div>
+    <div class="tab" data-t="scenes"><span class="n">2</span>씬·녹음</div>
+    <div class="tab" data-t="style"><span class="n">3</span>스타일</div>
+    <div class="tab" data-t="render"><span class="n">4</span>렌더</div>
+    <div class="tab" data-t="pack"><span class="n">5</span>업로드·쌤컷</div>
+  </div>
+  <div style="margin-left:auto" class="row">
+    <button class="auto" id="btnSave">프로젝트 저장</button>
+    <button class="auto" id="btnLoad">불러오기</button>
+    <input type="file" id="fileLoad" accept=".json" class="hide">
+  </div>
+</header>
+
+<div class="wrap">
+<main>
+
+<!-- 1. 분석·재창조 -->
+<section data-p="src">
+  <div class="panel" id="autoPanel">
+    <h2>🤖 Claude 자동화</h2>
+    <p class="hint">Claude가 이 페이지를 내장 브라우저로 조종합니다. Claude 채팅에서 <b>/youtube-recreate 유튜브주소 미제사건 쇼츠</b> 처럼 요청하면 자막 추출 → 분석·재창조 → 독립 검증 → 음성 → 이미지 → MP4 → QA까지 자동으로 진행됩니다. 아래 키는 <b>이 브라우저에만 저장</b>되고 Claude는 키를 입력하지 않으니, 처음 한 번만 직접 넣으세요.</p>
+    <div class="row">
+      <div><label>Gemini API 키 (음성 합성 TTS · 직접 분석 모드)</label><input id="inGKey" type="password" placeholder="AQ.… 또는 AIza…" autocomplete="off"></div>
+      <div><label>배경 이미지 방식</label><select id="inImgMode"><option value="auto">자동: AI 생성 → 위키미디어 → 컨셉 아트</option><option value="ai">AI 생성만 (실패 시 컨셉 아트)</option><option value="wiki">위키미디어 커먼즈 (무료·키 없음)</option><option value="art">컨셉 아트만 (외부 이미지 없음)</option></select></div>
+    </div>
+    <div class="row">
+      <div><label>TTS 모델</label><input id="inTModel" value="gemini-3.1-flash-tts-preview"></div>
+      <div><label>이미지 모델</label><input id="inIModel" value="gemini-3.1-flash-lite-image"></div>
+      <div><label>목소리 (비우면 컨셉 기본값)</label><input id="inVoice" placeholder="예: Charon, Kore, Sulafat"></div>
+      <label class="auto" style="margin-top:26px;display:flex;align-items:center;gap:6px;color:var(--tx)"><input type="checkbox" id="chkStyleTTS" checked style="width:auto">낭독 톤 지시 포함</label>
+    </div>
+    <div class="row" style="margin-top:10px">
+      <button class="auto" id="btnTestTTS">🔊 음성 테스트</button>
+      <button class="pri auto" id="btnAutoRun">⚡ 현재 대본으로 전체 자동 실행</button>
+      <span class="badge auto" id="autoStatus">대기</span>
+    </div>
+    <div class="prog"><i id="autoBar"></i></div>
+    <p class="hint">톤 지시 문장이 음성에 섞여 읽히면 '낭독 톤 지시 포함'을 끄세요. 무료 한도에 걸리면 자동으로 기다렸다가 다시 시도합니다.</p>
+  </div>
+
+  <div class="panel">
+    <h2>제작 컨셉</h2>
+    <div class="concepts" id="concepts"></div>
+    <p class="hint" id="conceptNote" style="margin-top:10px"></p>
+  </div>
+
+  <div class="panel">
+    <h2>원본 영상</h2>
+    <label>유튜브 영상 주소 (공개 영상만 가능 — 일부공개·비공개는 분석 불가)</label>
+    <div class="row"><input id="inUrl" placeholder="https://www.youtube.com/watch?v=... 또는 /shorts/..."><button class="auto" id="btnFetch">정보 확인</button></div>
+    <div class="src hide" id="srcInfo"><img id="srcThumb" alt=""><div><b id="srcTitle"></b><div class="hint" id="srcAuthor"></div></div></div>
+    <label>원본 스크립트 (선택 — 붙여넣으면 분석 정확도↑, 표절 검사 가능. 유튜브 설명란 아래 '스크립트 표시'에서 복사)</label>
+    <textarea id="inTrans" style="min-height:80px" placeholder="스크립트를 붙여넣으세요 (타임스탬프 포함돼도 됨)"></textarea>
+    <label>URL 없이 주제로 만들 때: 주제</label>
+    <input id="inTopic" placeholder="예: 1991년 개구리 소년 사건">
+    <label>내 관점·추가 자료 (원본과 다른 각도 — 비워두면 AI가 제안하지만, 직접 넣을수록 채널 고유성이 생깁니다)</label>
+    <textarea id="inAngle" placeholder="예: 수사 기록의 시간표를 직접 재정리해 보면 초기 72시간에 무슨 일이 비어 있는지 보인다"></textarea>
+  </div>
+
+  <div class="panel">
+    <h2>출력</h2>
+    <div class="seg" id="segFormat"><div data-v="short" class="on">쇼츠 9:16</div><div data-v="long">롱폼 16:9</div></div>
+    <div class="row">
+      <div><label>목표 길이 <span id="lenUnit">(초)</span></label><input type="number" id="inLen" value="55"></div>
+      <div><label>낭독 속도 (글자/초, 공백 제외 — 컨셉 선택 시 자동)</label><input type="number" id="inCps" value="4.8" step="0.1"></div>
+    </div>
+    <div class="row">
+      <div><label>직접 분석 모드 모델 (Claude 자동화에서는 사용 안 함)</label><input id="inGModel" value="gemini-3.6-flash"></div>
+    </div>
+    <div class="row" style="margin-top:12px">
+      <button class="auto" id="btnGen">🔍 Gemini로 직접 분석 (수동 모드)</button>
+      <button class="auto" id="btnCopyPrompt">프롬프트만 복사 (스크립트 기반 · 다른 AI 채팅용)</button>
+    </div>
+    <p class="hint">URL을 넣으면 Gemini가 영상(화면+음성)을 직접 봅니다. 긴 롱폼은 무료 한도를 넘을 수 있으니 그럴 땐 스크립트만 붙여넣고 URL을 비우세요.</p>
+    <label>AI 응답 JSON 직접 적용</label>
+    <textarea id="inJson" placeholder='{"analysis":{...},"recreation":{...}}'></textarea>
+    <button id="btnApplyJson" style="margin-top:6px">JSON 적용</button>
+  </div>
+
+  <div class="panel an hide" id="anPanel"></div>
+  <div class="panel hide" id="hookPanel"><h2>훅 후보 — 클릭하면 1번 씬 교체</h2><div class="hooks" id="hookList"></div></div>
+</section>
+
+<!-- 2. 씬 -->
+<section data-p="scenes" class="hide">
+  <div class="panel">
+    <h2>씬·녹음 <span class="badge" id="sceneSum"></span></h2>
+    <canvas id="curve" width="900" height="90" style="width:100%;height:90px;background:var(--panel2);border-radius:8px"></canvas>
+    <p class="hint" style="margin:4px 0 0">감정 곡선: 씬별 비트(훅·위기·절정 등) 강도. 평평한 구간이 길면 이탈 위험 구간입니다.</p>
+    <div class="row" style="margin-top:12px">
+      <button class="pri auto" id="btnPrompter">🎙 프롬프터 연속 녹음 (Space: 녹음/정지·다음, R: 다시, Esc: 닫기)</button>
+      <label class="auto" style="margin:0;display:flex;align-items:center;gap:6px;color:var(--tx)"><input type="checkbox" id="chkTrim" checked style="width:auto"> 앞뒤 무음 자동 제거</label>
+    </div>
+    <div class="row" style="margin-top:10px">
+      <button class="auto" id="btnAutoImg">🖼 이미지 자동 채우기</button>
+      <button class="auto" id="btnAutoTTS">🔊 음성 없는 씬 TTS 생성</button>
+      <button class="auto" id="btnAddScene">+ 씬</button>
+    </div>
+    <p class="hint">대본의 <b>/</b> 는 낭독 쉼표(자막에는 안 나옴), 강조어는 자막에서 강조색으로 표시되고 역경 컨셉에선 화면이 펀치 줌됩니다.</p>
+  </div>
+  <div id="sceneList"></div>
+</section>
+
+<!-- 3. 스타일 -->
+<section data-p="style" class="hide">
+  <div class="panel">
+    <h2>스타일 <span class="badge" id="styleConcept"></span></h2>
+    <p class="hint" id="styleDesc"></p>
+    <div class="row">
+      <div><label>강조 색</label><input type="color" id="stAcc" value="#ffcf70"></div>
+      <div><label>배경 어둡게 (%)</label><input type="number" id="stDim" value="30" min="0" max="80"></div>
+      <div><label>필름 그레인 (%)</label><input type="number" id="stGrain" value="5" min="0" max="20"></div>
+      <div><label>모션 속도 (x)</label><input type="number" id="stKen" value="1" min="0" max="3" step="0.1"></div>
+    </div>
+    <div class="row" style="margin-top:10px">
+      <label class="auto" style="display:flex;gap:6px;align-items:center;color:var(--tx)"><input type="checkbox" id="stBurn" checked style="width:auto">자막 넣기</label>
+      <label class="auto" style="display:flex;gap:6px;align-items:center;color:var(--tx)"><input type="checkbox" id="stTop" checked style="width:auto">상단 제목 (쇼츠)</label>
+      <label class="auto" style="display:flex;gap:6px;align-items:center;color:var(--tx)"><input type="checkbox" id="stBar" checked style="width:auto">진행바</label>
+      <label class="auto" style="display:flex;gap:6px;align-items:center;color:var(--tx)"><input type="checkbox" id="stSfx" checked style="width:auto">효과음 (자체 합성)</label>
+      <label class="auto" style="display:flex;gap:6px;align-items:center;color:var(--tx)"><input type="checkbox" id="stAmb" checked style="width:auto">BGM 없을 때 컨셉 앰비언트 생성</label>
+    </div>
+    <h3>배경음악 (저작권 없는 음원 — YouTube 오디오 보관함 등)</h3>
+    <div class="row">
+      <button class="auto" id="btnBgm">BGM 파일 선택</button><input type="file" id="fileBgm" accept="audio/*" class="hide">
+      <span class="auto badge" id="bgmName">없음 → 앰비언트 사용</span>
+      <div><label>음악 볼륨 (내레이션 중 자동 감쇠)</label><input type="range" id="stBgmVol" min="0" max="0.5" step="0.01" value="0.16"></div>
+    </div>
+    <p class="hint" id="bgmTip"></p>
+  </div>
+</section>
+
+<!-- 4. 렌더 -->
+<section data-p="render" class="hide">
+  <div class="panel">
+    <h2>렌더</h2>
+    <p class="hint"><b>MP4 내보내기</b>는 프레임 단위로 인코딩합니다. 실시간보다 빠르고 탭을 숨겨도 됩니다. Chrome·Edge 최신 버전이 필요합니다. 실시간 녹화는 WebCodecs가 없는 브라우저에서만 쓰세요.</p>
+    <div class="row">
+      <button class="auto" id="btnPreview">▶ 미리보기</button>
+      <button class="auto" id="btnStop">■ 정지</button>
+      <button class="pri auto" id="btnExport">⚡ MP4 내보내기 (오프라인 인코딩)</button>
+      <button class="auto" id="btnRender">⏺ 실시간 녹화 (구형 브라우저용)</button>
+    </div>
+    <div class="prog"><i id="progBar"></i></div>
+    <p class="hint" id="renderMsg"></p>
+    <div id="dlArea"></div>
+  </div>
+  <div class="panel"><h2>품질·리스크 점검</h2><div class="checks" id="checks"></div></div>
+</section>
+
+<!-- 5. 패키지 -->
+<section data-p="pack" class="hide">
+  <div class="panel">
+    <h2>썸네일</h2>
+    <div class="row">
+      <div><label>썸네일 문구 (줄바꿈 = Enter)</label><textarea id="inThumb" style="min-height:50px"></textarea></div>
+      <div style="flex:0 0 140px"><label>배경 씬 번호</label><input type="number" id="inThumbScene" value="1" min="1"></div>
+    </div>
+    <canvas id="thumb" width="1280" height="720" style="width:100%;border-radius:8px;margin-top:10px;background:#000"></canvas>
+    <div class="row" style="margin-top:8px"><button class="auto" id="btnThumbDraw">다시 그리기</button><button class="auto" id="btnThumbDl">PNG 저장</button></div>
+  </div>
+  <div class="panel">
+    <h2>업로드 메타데이터</h2>
+    <pre class="out" id="metaOut"></pre>
+    <div class="row" style="margin-top:8px"><button class="auto" id="btnMetaCopy">복사</button><button class="auto" id="btnSrt">SRT 자막 저장</button></div>
+  </div>
+  <div class="panel">
+    <h2>쌤컷 마무리 — Claude 채팅에 붙여넣을 지시문</h2>
+    <p class="hint">쌤컷(ssamtool.com/tool/cut) → 설정 → AI 연결 ON → 렌더한 영상을 쌤컷에 드래그 → 아래 지시문을 Claude에 붙여넣기. 쌤컷 원격 조작은 Claude 연결로만 가능합니다(HTML에서 직접 불가).</p>
+    <pre class="out" id="ssamOut"></pre>
+    <button style="margin-top:8px" id="btnSsamCopy">복사</button>
+  </div>
+</section>
+</main>
+
+<aside class="stage">
+  <div class="panel" style="padding:12px">
+    <div class="cvwrap"><canvas id="cv" width="1080" height="1920"></canvas></div>
+    <input type="range" id="seek" min="0" max="100" step="0.01" value="0" style="margin-top:10px">
+    <div class="row" style="margin-top:4px"><span class="hint" id="timeLbl">0.0s / 0.0s</span></div>
+  </div>
+</aside>
+</div>
+
+<div id="toast"></div>
+<input type="file" id="fileImg" accept="image/*" class="hide">
+<input type="file" id="fileAud" accept="audio/*" class="hide">
+
+<script>
+'use strict';
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+const SANS="Pretendard,'Noto Sans KR','Apple SD Gothic Neo','Malgun Gothic',sans-serif";
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+const easeOut=x=>1-Math.pow(1-x,3);
+let uid=1;
+
+/* ================= 컨셉 프리셋 ================= */
+const CONCEPTS={
+ moving:{name:'감동 실화',emoji:'🕯',
+  desc:'따뜻한 필름 색감 · 느린 줌 · 명조 자막 페이드 · 레터박스(롱폼) · 피아노풍 패드',
+  voice:'Sulafat',imgStyle:'Cinematic warm film photograph, soft golden window light, shallow depth of field, nostalgic everyday Korean life, 35mm film grain, emotional and quiet',ttsStyle:'in a warm, low, gentle voice, slowly, letting each sentence linger',
+  cps:4.6,filter:'sepia(.2) saturate(1.08) contrast(1.04) brightness(1.03)',tint:'rgba(255,165,80,.28)',grain:5,vignette:.5,letterbox:true,flicker:0,
+  cap:{font:"'Nanum Myeongjo',serif",weight:800,mode:'fade',color:'#fff6e8'},acc:'#ffcf70',
+  trans:{type:'fade',dur:.75},ken:.6,ambient:'warm',sfx:['none','chime','whoosh','riser','heartbeat'],
+  narr:'낮고 따뜻하게, 말하듯. 문장 끝을 툭 떨어뜨리지 말고 여운을 남길 것. / 에서 0.5~1초 멈춤. 절정 직전 씬은 평소보다 20% 느리게.',
+  bgm:'추천 BGM: 피아노 솔로·현악 앰비언트, 70~85 BPM, 가사 없음.',
+  rules:`[감동 실화 규칙]
+- 감정을 직접 말하지 말 것("감동적이었다","눈물이 났다" 금지). 구체적 장면·행동·사물·대사로 보여줄 것.
+- 비트 순서: 훅(결말의 한 장면이나 의외의 디테일) → 일상 → 상실/갈등 → 작은 선택 → 의미의 반전 → 여운.
+- 마지막 2씬은 행동이나 대사 하나로 끝내고 교훈 요약 금지.
+- 원본이 검증 불가한 '사연'이면 description 첫 줄에 '실화를 바탕으로 재구성' 명시, 새 디테일을 사실처럼 지어내지 말 것.`},
+ rise:{name:'역경 극복',emoji:'🔥',
+  desc:'고대비 색감 · 펀치 줌 · 굵은 단어 팝 자막 · 화이트 플래시 전환 · 점점 고조되는 패드',
+  voice:'Alnilam',imgStyle:'Cinematic high-contrast photograph, dramatic rim light at dawn, gritty texture, sense of struggle and rising determination, wide angle',ttsStyle:'with quiet determination that grows in energy, firmly stressing key words',
+  cps:5.6,filter:'contrast(1.16) saturate(1.12) brightness(1.02)',tint:'rgba(255,110,30,.14)',grain:4,vignette:.38,letterbox:false,flicker:0,
+  cap:{font:SANS,weight:900,mode:'pop',color:'#ffffff'},acc:'#ffd400',
+  trans:{type:'flash',dur:.2},ken:1.25,ambient:'build',sfx:['none','hit','whoosh','riser','boom'],
+  narr:'초반은 담담하게 → 위기·바닥에서 낮고 무겁게 → 전환점부터 속도와 힘을 올려 절정에서 가장 크게. 강조어는 한 박자 세게.',
+  bgm:'추천 BGM: 시네마틱 빌드업(에픽·트레일러), 점점 고조되는 곡, 90~120 BPM.',
+  rules:`[역경 극복 규칙]
+- 비트 순서: 훅(가장 낮은 지점의 장면 또는 최종 결과의 숫자) → 출발점 → 1차 실패 → 바닥 → 전환점 → 상승 → 결과와 대가.
+- 전환점은 '마음을 먹었다'가 아니라 구체적 행동·숫자·습관으로 쓸 것.
+- 미화 금지: 운·주변의 도움·치른 대가를 최소 한 씬 포함(신뢰도가 오히려 오른다).
+- 확인 가능한 연도·수치를 우선 사용하고, 불확실한 수치는 쓰지 말 것.`},
+ mystery:{name:'미제사건',emoji:'🕵',
+  desc:'탈색된 청록 톤 · 비네팅·플리커·강한 그레인 · 타자기 자막 · 사건 파일 스탬프 · 글리치 전환 · 저음 드론',
+  voice:'Charon',imgStyle:'Dark desaturated documentary-style reconstruction still, cold teal tone, fog and night, evidence-photo aesthetic, eerie but restrained, no gore',ttsStyle:'in a low, calm, dry documentary narrator tone with deliberate pauses',
+  cps:4.5,filter:'grayscale(.6) contrast(1.22) brightness(.82)',tint:'rgba(30,120,140,.3)',grain:9,vignette:.65,letterbox:false,flicker:.07,
+  cap:{font:"'Nanum Gothic Coding',monospace",weight:700,mode:'type',color:'#f2f2f2'},acc:'#ff3b3b',
+  trans:{type:'glitch',dur:.28},ken:.45,ambient:'drone',sfx:['none','typewriter','heartbeat','boom','hit','whoosh'],
+  narr:'감정을 빼고 낮게, 기자처럼 건조하게. 날짜·장소·숫자는 또박또박. 질문으로 끝나는 문장 뒤 1초 침묵.',
+  bgm:'추천 BGM: 다크 앰비언트·드론, 리듬 거의 없음. 앰비언트만으로도 충분합니다.',
+  rules:`[미제사건 규칙]
+- 비트 순서: 훅(가장 설명되지 않는 단서 하나) → 사건 개요(날짜·장소) → 초기 수사 → 핵심 단서 2~3개(각각 오픈 루프) → 가설 비교 → 왜 풀리지 않았나 → 현재 상태와 시청자 질문.
+- 사실/추정/루머를 문장에서 구분할 것("기록에 따르면","~로 알려졌다","확인되지 않았다").
+- 생존 인물이나 기소되지 않은 사람을 범인으로 단정 금지. 피해자·유족 존중, 잔혹 묘사 최소화, 미성년 피해자 실명 금지.
+- 각 씬 "stamp"에 그 씬의 날짜·장소(예: "1991.03.26 · 대구 달서구"), 해당 없으면 빈 문자열.`}
+};
+const SFX_LABEL={none:'효과음 없음',chime:'차임',whoosh:'휙',riser:'라이저(고조)',heartbeat:'심장박동',hit:'타격',boom:'붐(저음)',typewriter:'타자기'};
+const BEAT_INT={'훅':.8,'일상':.35,'도입':.35,'출발점':.35,'개요':.45,'전개':.5,'상실':.7,'갈등':.7,'위기':.75,'1차 실패':.6,'실패':.6,'바닥':.3,'초기 수사':.5,'단서':.7,'작은 선택':.6,'전환점':.7,'전환':.7,'상승':.8,'가설':.65,'의미의 반전':.9,'반전':.9,'절정':1,'결과':.85,'미해결':.8,'현재':.6,'결말':.6,'여운':.45,'질문':.8};
+
+const S={concept:'moving',format:'short',title:'',scenes:[],hooks:[],analysis:null,source:{url:'',title:'',author:''},
+  meta:{titles:[],description:'',tags:[],hashtags:[],thumbText:''},
+  style:{acc:'#ffcf70',dim:30,grain:5,ken:1,burn:true,top:true,bar:true,sfx:true,amb:true,bgmVol:0.16},bgm:null,bgmName:''};
+const CP=()=>CONCEPTS[S.concept];
+
+function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('on');clearTimeout(toast._t);toast._t=setTimeout(()=>t.classList.remove('on'),3000);}
+let _ac=null;function AC(){if(!_ac)_ac=new (window.AudioContext||window.webkitAudioContext)();if(_ac.state==='suspended')_ac.resume();return _ac;}
+function dims(){return S.format==='short'?[1080,1920]:[1920,1080];}
+function newScene(o={}){return {id:uid++,text:o.text||'',emph:Array.isArray(o.emph)?o.emph:(o.emph?String(o.emph).split(/\s*,\s*/):[]),direction:o.direction||'',beat:o.beat||'',keyword:o.keyword||'',chapter:o.chapter||'',sfx:o.sfx||'none',stamp:o.stamp||'',img:null,imgSrc:'',audioBuf:null,audioName:''};}
+function escapeHtml(t){return String(t??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+const cleanText=t=>t.replace(/\s*\/\s*/g,' ').replace(/\s+/g,' ').trim();
+
+/* ================= 탭·설정 ================= */
+$$('#tabs .tab').forEach(t=>t.onclick=()=>{
+  $$('#tabs .tab').forEach(x=>x.classList.toggle('on',x===t));
+  $$('section[data-p]').forEach(p=>p.classList.toggle('hide',p.dataset.p!==t.dataset.t));
+  if(t.dataset.t==='scenes')drawCurve();
+  if(t.dataset.t==='render')runChecks();
+  if(t.dataset.t==='pack')refreshPack();
+});
+['inGKey','inGModel','inTModel','inVoice','inIModel','inImgMode'].forEach(id=>{const v=localStorage.getItem('yrs_'+id);if(v)$('#'+id).value=v;$('#'+id).addEventListener('change',e=>localStorage.setItem('yrs_'+id,e.target.value.trim()));});
+
+function renderConcepts(){
+  $('#concepts').innerHTML=Object.entries(CONCEPTS).map(([k,c])=>`<div class="cc ${k===S.concept?'on':''}" data-k="${k}"><b>${c.emoji} ${c.name}</b><span>${c.desc}</span></div>`).join('');
+  $$('#concepts .cc').forEach(el=>el.onclick=()=>setConcept(el.dataset.k));
+  const c=CP();$('#conceptNote').innerHTML=`<b>낭독 가이드</b> — ${c.narr}`;
+  $('#styleConcept').textContent=c.emoji+' '+c.name;$('#styleDesc').textContent=c.desc;$('#bgmTip').textContent=c.bgm;
+}
+function setConcept(k){
+  S.concept=k;const c=CP();
+  $('#inCps').value=c.cps;S.style.acc=c.acc;S.style.grain=c.grain;$('#stAcc').value=c.acc;$('#stGrain').value=c.grain;
+  renderConcepts();renderScenes();drawStatic();
+}
+$$('#segFormat div').forEach(d=>d.onclick=()=>{
+  S.format=d.dataset.v;$$('#segFormat div').forEach(x=>x.classList.toggle('on',x===d));
+  $('#lenUnit').textContent=S.format==='short'?'(초)':'(분)';$('#inLen').value=S.format==='short'?55:10;
+  const [W,H]=dims();cv.width=W;cv.height=H;renderScenes();drawStatic();
+});
+
+/* ================= 원본 정보 ================= */
+function ytId(u){const m=String(u).match(/(?:youtu\.be\/|v=|\/shorts\/|\/live\/|\/embed\/)([\w-]{11})/);return m?m[1]:null;}
+function normUrl(u){const id=ytId(u);return id?`https://www.youtube.com/watch?v=${id}`:'';}
+$('#btnFetch').onclick=fetchInfo;
+async function fetchInfo(){
+  const id=ytId($('#inUrl').value);if(!id)return toast('유튜브 주소를 확인하세요');
+  S.source.url=normUrl($('#inUrl').value);
+  $('#srcThumb').src=`https://i.ytimg.com/vi/${id}/hqdefault.jpg`;$('#srcInfo').classList.remove('hide');
+  try{const r=await fetch(`https://www.youtube.com/oembed?url=${encodeURIComponent(S.source.url)}&format=json`);const j=await r.json();S.source.title=j.title;S.source.author=j.author_name;$('#srcTitle').textContent=j.title;$('#srcAuthor').textContent=j.author_name;}
+  catch(e){$('#srcTitle').textContent='(제목을 불러오지 못함 — 분석은 진행 가능)';}
+}
+
+/* ================= 프롬프트 ================= */
+function buildPrompt(withVideo){
+  const c=CP(),short=S.format==='short';const len=+$('#inLen').value||55;const cps=+$('#inCps').value||c.cps;
+  const sec=short?len:len*60;const chars=Math.round(sec*cps*0.92);
+  const trans=$('#inTrans').value.trim(),topic=$('#inTopic').value.trim(),angle=$('#inAngle').value.trim();
+  const src=withVideo?`[원본] 첨부된 유튜브 영상(화면과 음성 모두 분석).`:trans?`[원본] 아래 스크립트.`:`[원본 없음] 주제 기반 신규 제작: ${topic}`;
+  const fmt=short?
+`- 유튜브 쇼츠, 총 ${sec}초 = 공백 제외 약 ${chars}자(±10%). 씬 9~15개, 씬당 1문장(공백 제외 10~32자).
+- 1번 씬 = 훅: 공백 제외 16자 이내, 첫 1초에 질문을 유발. 인사·"오늘은"·채널 소개 금지.
+- 마지막 씬은 1번 씬과 의미가 이어지게 끝내 반복 시청 유도. 구독 요청 금지.`:
+`- 유튜브 롱폼, 약 ${len}분 = 공백 제외 약 ${chars}자. 씬당 1~3문장(공백 제외 40~120자).
+- 첫 30초 안에 결말에 대한 궁금증과 영상의 약속을 제시. 인사 금지.
+- 챕터 4~7개: 챕터가 시작되는 씬에만 "chapter"에 챕터명, 나머지는 빈 문자열. 첫 씬에도 챕터명.
+- 각 챕터 끝 씬에 다음 챕터로 넘어가게 만드는 미해결 질문.`;
+  return `너는 구독자 100만 이상 한국 스토리텔링 채널의 수석 작가이자 편집 감독이다. 설명 없이 JSON만 출력하라.
+
+${src}
+[제작 컨셉] ${c.name}
+[제작자 관점·추가 자료] ${angle||'(없음 — 원본과 차별되는 관점을 네가 제안하고 recreation.angle에 명시)'}
+
+[1단계: 원본 분석] ${withVideo||trans?'원본의 구조를 시간대별 비트로 나누고, 각 비트에 쓰인 기법과 시청 유지 강도를 평가하라. 시청자가 이탈할 만한 지점과 이유를 구체적으로 짚어라. 낭독 속도·톤·컷 리듬·자막·음악 스타일도 관찰하라.':'원본이 없으므로 analysis는 주제 관련 핵심 사실과 확인 필요 사항 위주로 작성.'}
+
+[2단계: 재창조]
+- 원본 문장을 그대로 쓰거나 어순만 바꿔 쓰지 말 것. 원본에서는 사실 정보만 가져오고 구조·관점·표현은 새로 쓸 것.
+- 1단계에서 찾은 약점을 구체적으로 고친 버전이어야 하며, 무엇을 바꿨는지 differences에 적을 것.
+- 내레이션은 귀로 듣는 구어체. 한 문장에 한 정보. 확인되지 않은 사실은 단정하지 말 것.
+- "text" 안의 "/"는 낭독 쉼표(0.5~1초). 극적인 지점에만 사용.
+- "emph": text에 실제로 등장하는 핵심 단어 0~2개.
+- "direction": 그 씬의 낭독 지시(속도·톤·쉼), 15자 내외.
+- "beat": 해당 씬의 비트명(컨셉 규칙의 비트명 사용).
+- "sfx": ${c.sfx.join(', ')} 중 하나. 대부분 none, 전체 씬의 25% 이하만 사용.
+- "keyword": 배경 스톡 사진 검색용 영어 2~4단어(구체적 사물·장소·분위기). 실존 인물 얼굴 금지.
+${c.rules}
+
+[포맷]
+${fmt}
+
+[출력 JSON]
+{
+ "analysis":{
+  "summary":"원본 3문장 요약",
+  "structure":[{"time":"0:00","beat":"비트","technique":"사용 기법","retention":"강|중|약"}],
+  "strengths":["원본이 잘한 점"],
+  "weaknesses":["이탈 유발 지점과 이유"],
+  "styleNotes":"낭독·편집·자막·음악 스타일 관찰",
+  "coreFacts":["재창조에 사용할 사실 정보"],
+  "verifyList":["업로드 전 사실 확인이 필요한 주장"],
+  "risks":["명예훼손·사생활·저작권·정책 위험 요소"]
+ },
+ "recreation":{
+  "angle":"원본과 다른 새 관점 한 문장",
+  "differences":["원본 대비 바꾼 구조·관점·표현"],
+  "title":"제목 40자 이내",
+  "titleCandidates":["후보1","후보2","후보3"],
+  "hookVariants":["대체 훅1","대체 훅2","대체 훅3"],
+  "scenes":[{"text":"","emph":[],"direction":"","beat":"","keyword":"","chapter":"","sfx":"none","stamp":""}],
+  "description":"설명란(첫 2줄 핵심 요약, 300~600자${withVideo||trans?', 끝에 원본 출처 표기 자리 [출처]':''})",
+  "tags":["10~15개"],
+  "hashtags":["#3개"],
+  "thumbnailText":"줄당 8자 이내 2줄, 줄바꿈 \\n"
+ }
+}${trans&&!withVideo?`\n\n[원본 스크립트]\n${trans.slice(0,60000)}`:''}`;
+}
+$('#btnCopyPrompt').onclick=async()=>{
+  if(!$('#inTrans').value.trim()&&!$('#inTopic').value.trim())return toast('다른 AI는 유튜브 영상을 직접 못 봅니다 — 스크립트나 주제를 넣으세요');
+  await navigator.clipboard.writeText(buildPrompt(false));toast('복사됨 → AI 채팅에 붙여넣고 받은 JSON을 아래에 적용하세요');
+};
+function parseJSONLoose(txt){txt=txt.trim().replace(/^```(?:json)?/i,'').replace(/```$/,'').trim();const a=txt.indexOf('{'),b=txt.lastIndexOf('}');if(a<0||b<0)throw new Error('JSON 없음');return JSON.parse(txt.slice(a,b+1));}
+$('#btnApplyJson').onclick=()=>{try{applyResult(parseJSONLoose($('#inJson').value));}catch(e){toast('JSON 오류: '+e.message);}};
+$('#btnGen').onclick=async()=>{
+  const key=$('#inGKey').value.trim(),model=$('#inGModel').value.trim()||'gemini-3.6-flash';
+  if(!key)return toast('Gemini API 키를 넣거나 "프롬프트만 복사"를 쓰세요');
+  const url=normUrl($('#inUrl').value);const trans=$('#inTrans').value.trim();
+  if(!url&&!trans&&!$('#inTopic').value.trim())return toast('URL·스크립트·주제 중 하나는 필요합니다');
+  if(url&&!S.source.title)fetchInfo();
+  S.source.url=url;
+  const withVideo=!!url;const parts=[];
+  if(withVideo)parts.push({fileData:{fileUri:url}});
+  let prompt=buildPrompt(withVideo);if(withVideo&&trans)prompt+=`\n\n[참고: 원본 스크립트]\n${trans.slice(0,60000)}`;
+  parts.push({text:prompt});
+  const b=$('#btnGen');b.disabled=true;b.textContent=withVideo?'영상 분석 중... (1~2분)':'생성 중...';
+  try{
+    const r=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`,{method:'POST',
+      headers:{'Content-Type':'application/json','x-goog-api-key':key},
+      body:JSON.stringify({contents:[{role:'user',parts}],generationConfig:{responseMimeType:'application/json',temperature:0.85}})});
+    const j=await r.json();if(!r.ok)throw new Error(j.error?.message||r.status);
+    const txt=j.candidates?.[0]?.content?.parts?.map(p=>p.text||'').join('')||'';
+    $('#inJson').value=txt;applyResult(parseJSONLoose(txt));
+  }catch(e){toast('실패: '+e.message+(withVideo?' — 긴 영상이면 스크립트 모드로 시도':''));}
+  b.disabled=false;b.textContent='🔍 Gemini로 직접 분석 (수동 모드)';
+};
+function applyResult(o){
+  const rc=o.recreation||o;if(!Array.isArray(rc.scenes)||!rc.scenes.length)throw new Error('scenes 없음');
+  S.analysis=o.analysis||null;S.recreation={angle:rc.angle||'',differences:rc.differences||[]};
+  S.title=rc.title||'';S.hooks=rc.hookVariants||[];
+  S.scenes=rc.scenes.map(s=>newScene({...s,sfx:CP().sfx.includes(s.sfx)?s.sfx:'none'}));
+  S.meta={titles:[rc.title,...(rc.titleCandidates||[])].filter(Boolean),description:rc.description||'',tags:rc.tags||[],hashtags:rc.hashtags||[],thumbText:(rc.thumbnailText||'').replace(/\\n/g,'\n')};
+  $('#inThumb').value=S.meta.thumbText;
+  renderAnalysis();renderHooks();renderScenes();drawStatic();toast(`씬 ${S.scenes.length}개 완성 → 2단계에서 녹음하세요`);
+}
+function li(a){return a&&a.length?`<ul>${a.map(x=>`<li>${escapeHtml(x)}</li>`).join('')}</ul>`:'<p class="hint">없음</p>';}
+function renderAnalysis(){
+  const a=S.analysis,r=S.recreation||{};const p=$('#anPanel');
+  if(!a){p.classList.add('hide');return;}p.classList.remove('hide');
+  p.innerHTML=`<h2>원본 분석</h2><p>${escapeHtml(a.summary||'')}</p>
+  ${a.structure?.length?`<h3>구조·유지 강도</h3><table><tr><th>시간</th><th>비트</th><th>기법</th><th>유지</th></tr>${a.structure.map(s=>`<tr><td>${escapeHtml(s.time)}</td><td>${escapeHtml(s.beat)}</td><td>${escapeHtml(s.technique)}</td><td class="${s.retention==='약'?'b':s.retention==='중'?'w':'o'}">${escapeHtml(s.retention)}</td></tr>`).join('')}</table>`:''}
+  <h3>원본 강점</h3>${li(a.strengths)}<h3>이탈 지점</h3>${li(a.weaknesses)}
+  <h3>스타일 관찰</h3><p class="hint" style="font-size:13px">${escapeHtml(a.styleNotes||'')}</p>
+  <h3>재창조 관점</h3><p><b>${escapeHtml(r.angle||'')}</b></p>${li(r.differences)}
+  <h3 class="w">업로드 전 사실 확인 필요</h3>${li(a.verifyList)}
+  <h3 class="b">위험 요소</h3>${li(a.risks)}`;
+}
+function renderHooks(){
+  $('#hookPanel').classList.toggle('hide',!S.hooks.length);$('#hookList').innerHTML='';
+  S.hooks.forEach(h=>{const b=document.createElement('button');b.textContent=h;b.onclick=()=>{if(S.scenes[0]){S.scenes[0].text=h;renderScenes();drawStatic();toast('1번 씬 교체');}};$('#hookList').appendChild(b);});
+}
+
+/* ================= 씬 ================= */
+function sceneDur(s){
+  if(s.audioBuf)return s.audioBuf.duration+0.3;
+  const cps=+$('#inCps').value||CP().cps;const n=s.text.replace(/[\s\/]/g,'').length;const pauses=(s.text.match(/\//g)||[]).length;
+  return Math.max(1.6,n/cps+pauses*0.6+0.4);
+}
+let pendingScene=null;
+function renderScenes(){
+  const L=$('#sceneList');L.innerHTML='';const c=CP();
+  S.scenes.forEach((s,i)=>{
+    const el=document.createElement('div');el.className='scene';
+    el.innerHTML=`<div class="th" style="${s.imgSrc?`background-image:url('${s.imgSrc}')`:''}"><span class="idx">${i+1}</span>${s.imgSrc?'':'이미지 없음'}${s.beat?`<span class="beat">${escapeHtml(s.beat)}</span>`:''}</div>
+    <div>
+      <textarea data-k="text">${escapeHtml(s.text)}</textarea>
+      <div class="row" style="margin-top:6px">
+        <input data-k="emph" placeholder="강조어 (쉼표 구분)" value="${escapeHtml(s.emph.join(', '))}">
+        <input data-k="direction" placeholder="낭독 지시" value="${escapeHtml(s.direction)}">
+        <input data-k="beat" placeholder="비트" value="${escapeHtml(s.beat)}" style="flex:0 0 90px">
+      </div>
+      <div class="row" style="margin-top:6px">
+        <input data-k="keyword" placeholder="이미지 키워드(영어)" value="${escapeHtml(s.keyword)}">
+        ${S.format==='long'?`<input data-k="chapter" placeholder="챕터명" value="${escapeHtml(s.chapter)}">`:''}
+        ${S.concept==='mystery'?`<input data-k="stamp" placeholder="스탬프: 날짜 · 장소" value="${escapeHtml(s.stamp)}">`:''}
+        <select data-k="sfx" style="flex:0 0 130px">${c.sfx.map(x=>`<option value="${x}" ${x===s.sfx?'selected':''}>${SFX_LABEL[x]}</option>`).join('')}</select>
+      </div>
+      <div class="tools">
+        <button class="rec" data-a="rec">🎙 이 씬부터 녹음</button><button data-a="aud">오디오 파일</button>
+        <button data-a="img">이미지</button><button data-a="pex">위키 사진</button><button data-a="ai">AI 이미지</button><button data-a="play">▶ 음성</button>
+        <button data-a="up">↑</button><button data-a="down">↓</button><button data-a="dup">복제</button><button data-a="del">삭제</button>
+        <span class="badge ${s.audioBuf?'ok':''}">${s.audioBuf?'음성 '+s.audioBuf.duration.toFixed(1)+'s':'음성 없음'}</span><span class="badge">${sceneDur(s).toFixed(1)}s</span>
+      </div>
+    </div>`;
+    el.querySelectorAll('[data-k]').forEach(inp=>inp.addEventListener(inp.tagName==='SELECT'?'change':'input',()=>{
+      const k=inp.dataset.k;s[k]=k==='emph'?inp.value.split(/\s*,\s*/).filter(Boolean):inp.value;
+      if(k==='beat')drawCurve();updateSum();drawStatic();}));
+    el.querySelectorAll('[data-a]').forEach(btn=>btn.onclick=()=>sceneAction(btn.dataset.a,s,i));
+    L.appendChild(el);
+  });
+  updateSum();drawCurve();
+}
+function updateSum(){const tl=buildTimeline();$('#sceneSum').textContent=`${S.scenes.length}씬 · ${tl.total.toFixed(1)}초 · 음성 ${S.scenes.filter(s=>s.audioBuf).length}/${S.scenes.length}`;$('#seek').max=tl.total||1;}
+function sceneAction(a,s,i){
+  if(a==='up'&&i>0){[S.scenes[i-1],S.scenes[i]]=[S.scenes[i],S.scenes[i-1]];renderScenes();}
+  if(a==='down'&&i<S.scenes.length-1){[S.scenes[i+1],S.scenes[i]]=[S.scenes[i],S.scenes[i+1]];renderScenes();}
+  if(a==='del'){S.scenes.splice(i,1);renderScenes();drawStatic();}
+  if(a==='dup'){const c=newScene(s);c.img=s.img;c.imgSrc=s.imgSrc;S.scenes.splice(i+1,0,c);renderScenes();}
+  if(a==='img'){pendingScene=s;$('#fileImg').click();}
+  if(a==='aud'){pendingScene=s;$('#fileAud').click();}
+  if(a==='pex')openWiki(s);
+  if(a==='ai'){s.img=null;aiImage(s).then(()=>{renderScenes();drawStatic();}).catch(e=>toast(e.message));}
+  if(a==='play'&&s.audioBuf){const ac=AC();const src=ac.createBufferSource();src.buffer=s.audioBuf;src.connect(ac.destination);src.start();}
+  if(a==='rec')openPrompter(i);
+}
+$('#btnAddScene').onclick=()=>{S.scenes.push(newScene());renderScenes();};
+function drawCurve(){
+  const c=$('#curve'),x=c.getContext('2d'),W=c.width,H=c.height;x.clearRect(0,0,W,H);
+  const tl=buildTimeline();if(!tl.scenes.length)return;
+  const pts=tl.scenes.map(sc=>{const b=sc.s.beat||'';let v=.5;for(const k in BEAT_INT)if(b.includes(k)){v=BEAT_INT[k];break;}return [(sc.start+sc.end)/2/tl.total*W,H-8-v*(H-20)];});
+  x.strokeStyle='#2c303b';x.beginPath();x.moveTo(0,H-8);x.lineTo(W,H-8);x.stroke();
+  x.strokeStyle=S.style.acc;x.lineWidth=2.5;x.beginPath();pts.forEach((p,i)=>i?x.lineTo(p[0],p[1]):x.moveTo(p[0],p[1]));x.stroke();
+  x.fillStyle='#9097a6';x.font='11px '+SANS;tl.scenes.forEach((sc,i)=>{x.beginPath();x.arc(pts[i][0],pts[i][1],3.5,0,7);x.fillStyle=S.style.acc;x.fill();if(sc.s.beat){x.fillStyle='#9097a6';x.fillText(sc.s.beat.slice(0,5),pts[i][0]-12,pts[i][1]-7);}});
+}
+
+/* ================= 녹음 (프롬프터) ================= */
+let P=null;
+async function openPrompter(start=0){
+  if(!S.scenes.length)return toast('씬이 없습니다');
+  let stream;try{stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true}});}catch(e){return toast('마이크 권한 필요: '+e.message);}
+  const ac=AC();const an=ac.createAnalyser();an.fftSize=512;const msrc=ac.createMediaStreamSource(stream);msrc.connect(an);
+  const m=document.createElement('div');m.className='modal';
+  m.innerHTML=`<div class="box pbox"><div class="row"><b id="pIdx" class="auto"></b><span class="hint" id="pBeat"></span><button class="auto" id="pClose">닫기 (Esc)</button></div>
+  <div class="pdir" id="pDir"></div><div class="ptext" id="pText"></div>
+  <div class="meter"><i id="pMeter"></i></div><div class="pstate" id="pState"></div>
+  <div class="row" style="justify-content:center;margin-top:14px"><button class="auto" id="pPrev">◀ 이전</button><button class="pri auto" id="pMain">● 녹음 시작 (Space)</button><button class="auto" id="pRetake">다시 (R)</button><button class="auto" id="pNext">다음 ▶</button></div>
+  <p class="hint" style="margin-top:12px">${escapeHtml(CP().narr)}</p></div>`;
+  document.body.appendChild(m);
+  P={i:start,stream,an,m,mr:null,chunks:[],rec:false,raf:0};
+  const buf=new Uint8Array(an.fftSize);
+  const meter=()=>{an.getByteTimeDomainData(buf);let pk=0;for(const v of buf)pk=Math.max(pk,Math.abs(v-128));$('#pMeter').style.width=Math.min(100,pk/128*160)+'%';$('#pMeter').style.background=pk>120?'var(--bad)':'var(--ok)';P.raf=requestAnimationFrame(meter);};meter();
+  m.querySelector('#pClose').onclick=closePrompter;m.querySelector('#pMain').onclick=()=>P.rec?pStop(true):pStart();
+  m.querySelector('#pRetake').onclick=()=>{if(P.rec)pStop(false,true);else pStart();};
+  m.querySelector('#pPrev').onclick=()=>{if(!P.rec&&P.i>0){P.i--;pShow();}};m.querySelector('#pNext').onclick=()=>{if(!P.rec&&P.i<S.scenes.length-1){P.i++;pShow();}};
+  document.addEventListener('keydown',pKey);pShow();
+}
+function pKey(e){if(!P)return;if(e.target.tagName==='TEXTAREA'||e.target.tagName==='INPUT')return;
+  if(e.code==='Space'){e.preventDefault();P.rec?pStop(true):pStart();}
+  else if(e.key==='r'||e.key==='R'){e.preventDefault();if(P.rec)pStop(false,true);else pStart();}
+  else if(e.key==='Escape')closePrompter();}
+function pShow(){
+  const s=S.scenes[P.i];const emph=s.emph||[];
+  $('#pIdx').textContent=`씬 ${P.i+1} / ${S.scenes.length}`;$('#pBeat').textContent=s.beat||'';$('#pDir').textContent=s.direction?'🎧 '+s.direction:'';
+  $('#pText').innerHTML=s.text.split(/(\/)/).map(part=>part==='/'?'<span class="ps">‖</span>':escapeHtml(part).split(/(\s+)/).map(w=>emph.some(e=>e&&w.includes(e))?`<em>${w}</em>`:w).join('')).join('');
+  $('#pState').className='pstate';$('#pState').textContent=s.audioBuf?`녹음됨 ${s.audioBuf.duration.toFixed(1)}초 — Space로 다시 녹음`:'대기 — Space로 녹음 시작';
+  $('#pMain').textContent='● 녹음 시작 (Space)';
+}
+function pStart(){
+  P.chunks=[];P.mr=new MediaRecorder(P.stream);P.mr.ondataavailable=e=>P.chunks.push(e.data);P.rec=true;P.mr.start();
+  $('#pState').className='pstate recing';$('#pState').textContent='● 녹음 중 — 다 읽으면 Space (정지 후 다음 씬)';$('#pMain').textContent='■ 정지·다음 (Space)';
+}
+function pStop(goNext,retake=false){
+  const sc=S.scenes[P.i];const idx=P.i;P.rec=false;
+  P.mr.onstop=async()=>{
+    if(retake){pStart();return;}
+    try{let buf=await AC().decodeAudioData(await new Blob(P.chunks).arrayBuffer());if($('#chkTrim').checked)buf=trimSilence(buf);sc.audioBuf=buf;sc.audioName='녹음';}catch(e){toast('녹음 디코딩 실패');}
+    if(!P)return;if(goNext&&idx<S.scenes.length-1){P.i=idx+1;}else if(goNext){toast('마지막 씬까지 녹음 완료');}
+    pShow();renderScenes();drawStatic();
+  };
+  P.mr.stop();
+}
+function closePrompter(){if(!P)return;if(P.rec){P.mr.onstop=null;P.mr.stop();}cancelAnimationFrame(P.raf);P.stream.getTracks().forEach(t=>t.stop());P.m.remove();document.removeEventListener('keydown',pKey);P=null;renderScenes();}
+function trimSilence(buf,th=0.015){
+  const ch=buf.getChannelData(0),sr=buf.sampleRate;let s=0,e=ch.length-1;
+  while(s<ch.length&&Math.abs(ch[s])<th)s++;while(e>s&&Math.abs(ch[e])<th)e--;
+  s=Math.max(0,s-Math.floor(sr*0.06));e=Math.min(ch.length-1,e+Math.floor(sr*0.15));const len=e-s+1;if(len<sr*0.25)return buf;
+  const out=AC().createBuffer(buf.numberOfChannels,len,sr);for(let c=0;c<buf.numberOfChannels;c++)out.copyToChannel(buf.getChannelData(c).subarray(s,e+1),c);return out;
+}
+$('#btnPrompter').onclick=()=>{const first=S.scenes.findIndex(s=>!s.audioBuf);openPrompter(first<0?0:first);};
+$('#fileImg').onchange=e=>{const f=e.target.files[0];if(!f||!pendingScene)return;const sc=pendingScene;const url=URL.createObjectURL(f);loadImg(url,false).then(img=>{sc.img=img;sc.imgSrc=url;renderScenes();drawStatic();});e.target.value='';};
+$('#fileAud').onchange=async e=>{const f=e.target.files[0];if(!f||!pendingScene)return;const sc=pendingScene;try{let buf=await AC().decodeAudioData(await f.arrayBuffer());if($('#chkTrim').checked)buf=trimSilence(buf);sc.audioBuf=buf;sc.audioName=f.name;renderScenes();drawStatic();}catch(err){toast('오디오를 읽지 못했습니다');}e.target.value='';};
+function loadImg(src,cors=true){return new Promise((res,rej)=>{const im=new Image();if(cors)im.crossOrigin='anonymous';im.onload=()=>res(im);im.onerror=()=>rej(new Error('이미지 로드 실패'));im.src=src;});}
+
+/* ================= 이미지: Gemini AI → 위키미디어 커먼즈 → 컨셉 아트 ================= */
+let aiImgDisabled=false,aiImgReason='';
+async function wikiSearch(q){
+  const w=S.format==='short'?1080:1920;
+  const u=`https://commons.wikimedia.org/w/api.php?action=query&format=json&origin=*&generator=search&gsrsearch=${encodeURIComponent(q+' filetype:bitmap')}&gsrnamespace=6&gsrlimit=20&prop=imageinfo&iiprop=url|size|mime|extmetadata&iiurlwidth=${w}`;
+  const r=await fetch(u);if(!r.ok)throw new Error('위키미디어 '+r.status);const j=await r.json();
+  const want=S.format==='short'?'portrait':'landscape';const strip=h=>String(h||'').replace(/<[^>]+>/g,'').replace(/\s+/g,' ').trim();
+  return Object.values((j.query&&j.query.pages)||{}).map(p=>{
+    const ii=p.imageinfo&&p.imageinfo[0];if(!ii||!/jpeg|png|webp/.test(ii.mime||'')||ii.width<700)return null;const m=ii.extmetadata||{};
+    const ratio=want==='portrait'?ii.height/ii.width:ii.width/ii.height;
+    return {thumb:ii.thumburl||ii.url,full:ii.thumburl||ii.url,score:ratio+(p.index?-p.index*0.02:0),
+      credit:`${String(p.title||'').replace(/^File:/,'')} — ${strip(m.Artist&&m.Artist.value).slice(0,80)||'작자 미상'}, ${strip(m.LicenseShortName&&m.LicenseShortName.value)||'라이선스 확인 필요'} (${ii.descriptionurl||''})`};
+  }).filter(Boolean).sort((a,b)=>b.score-a.score);
+}
+async function aiImage(s){
+  const key=$('#inGKey').value.trim();if(!key)throw Object.assign(new Error('Gemini 키 없음'),{fatal:true});
+  const model=$('#inIModel').value.trim()||'gemini-3.1-flash-lite-image';const C=CP();
+  const prompt=`${C.imgStyle}. Main subject: ${s.keyword||'atmospheric scene'}. Story context (Korean narration, do not render as text): ${cleanText(s.text)}. ${S.format==='short'?'Vertical 9:16 composition, subject in the middle third.':'Wide 16:9 cinematic composition.'} Absolutely no text, letters, captions, logos or watermarks. Do not depict identifiable real people; use places, objects, hands, silhouettes or backs instead. No gore.`;
+  let useCfg=true;
+  for(let attempt=0;attempt<4;attempt++){
+    const gc={responseModalities:['TEXT','IMAGE']};if(useCfg)gc.imageConfig={aspectRatio:S.format==='short'?'9:16':'16:9'};
+    let r,j={};try{r=await gfetch(model,{contents:[{parts:[{text:prompt}]}],generationConfig:gc});j=await r.json().catch(()=>({}));}catch(e){r={ok:false,status:0};}
+    const msg=(j.error&&j.error.message)||'';
+    if(!r.ok&&useCfg&&r.status===400&&/image_?config|aspect/i.test(msg)){useCfg=false;continue;}
+    if(!r.ok&&(/limit:\s*0/.test(msg)||[401,403,404].includes(r.status)))throw Object.assign(new Error('AI 이미지 사용 불가: '+(msg||r.status).slice(0,120)),{fatal:true});
+    if(!r.ok&&(r.status===429||r.status>=500||r.status===0)){await sleep(Math.min(40,retrySec(j)||5*2**attempt)*1000);continue;}
+    if(!r.ok)throw new Error('AI 이미지 '+r.status+' '+msg.slice(0,100));
+    const part=(j.candidates&&j.candidates[0]&&j.candidates[0].content&&j.candidates[0].content.parts||[]).find(p=>p.inlineData&&/^image\//.test(p.inlineData.mimeType||''));
+    if(!part)throw new Error('AI 이미지 응답에 이미지 없음 (안전 필터 가능)');
+    const blob=new Blob([b64ToBytes(part.inlineData.data)],{type:part.inlineData.mimeType});const url=URL.createObjectURL(blob);
+    s.img=await loadImg(url,false);s.imgSrc=url;s.imgSource='ai';s.credit='';return;
+  }
+  throw new Error('AI 이미지 한도 초과');
+}
+async function setSceneImg(s,url){
+  try{const r=await fetch(url);if(!r.ok)throw new Error(r.status);const u=URL.createObjectURL(await r.blob());s.img=await loadImg(u,false);s.imgSrc=url;return true;}
+  catch(e){toast('이미지 로드 실패 — 컨셉 아트로 대체');return false;}
+}
+async function openWiki(s){
+  const m=document.createElement('div');m.className='modal';
+  m.innerHTML=`<div class="box"><div class="row"><input id="wq" value="${escapeHtml(s.keyword||'')}" placeholder="검색어 (영어·한국어)"><button class="auto" id="wgo">검색</button><button class="auto" id="mx">닫기</button></div><div class="grid" style="margin-top:12px"></div><p class="hint">Wikimedia Commons — 선택한 사진의 출처·라이선스는 설명란에 자동 표기됩니다.</p></div>`;
+  const go=async()=>{const g=m.querySelector('.grid');g.innerHTML='<p class="hint">검색 중...</p>';let list=[];try{list=await wikiSearch(m.querySelector('#wq').value);}catch(e){g.innerHTML='';return toast(e.message);}
+    g.innerHTML='';list.slice(0,16).forEach(p=>{const im=document.createElement('img');im.src=p.thumb;im.title=p.credit;im.onclick=async()=>{m.remove();if(await setSceneImg(s,p.full)){s.credit=p.credit;s.imgSource='wiki';}renderScenes();drawStatic();};g.appendChild(im);});};
+  m.querySelector('#wgo').onclick=go;m.querySelector('#mx').onclick=()=>m.remove();document.body.appendChild(m);go();
+}
+async function autoFillImages(onP){
+  const mode=$('#inImgMode').value;const used=new Set(S.scenes.map(s=>s.imgSrc).filter(Boolean));let i=0;const cnt={ai:0,wiki:0,art:0};
+  for(const s of S.scenes){i++;if(abortFlag)throw new Error('중단됨');if(s.img){cnt[s.imgSource||'wiki']=(cnt[s.imgSource||'wiki']||0)+1;continue;}
+    let ok=false;
+    if((mode==='auto'||mode==='ai')&&!aiImgDisabled){onP&&onP((i-1)/S.scenes.length,`AI 이미지 ${i}/${S.scenes.length}`);
+      try{await aiImage(s);ok=true;}catch(e){if(e.fatal){aiImgDisabled=true;aiImgReason=e.message;}}}
+    if(!ok&&(mode==='auto'||mode==='wiki')){onP&&onP((i-1)/S.scenes.length,`위키미디어 ${i}/${S.scenes.length}`);
+      try{const list=await wikiSearch(s.keyword||S.title);const pick=list.find(p=>!used.has(p.full));
+        if(pick&&await setSceneImg(s,pick.full)){used.add(pick.full);s.credit=pick.credit;s.imgSource='wiki';ok=true;}}catch(e){}}
+    if(!ok){s.imgSource='art';}
+    cnt[s.imgSource]++;
+  }
+  renderScenes();drawStatic();return cnt;
+}
+$('#btnAutoImg').onclick=async()=>{try{const c=await autoFillImages();toast(`AI ${c.ai} · 위키 ${c.wiki} · 컨셉아트 ${c.art}${aiImgDisabled?' (AI 불가: '+aiImgReason+')':''}`);}catch(e){toast(e.message);}};
+
+/* ================= 컨셉 아트 (외부 이미지가 없을 때) ================= */
+function drawArt(ctx,W,H,sc,p,t){
+  const s=sc.s,c=S.concept,M=Math.min(W,H);const word=(s.emph&&s.emph[0])||s.beat||'';const seed=hash(s.text||'x');
+  if(c==='mystery'){
+    const g=ctx.createLinearGradient(0,0,0,H);g.addColorStop(0,'#0b1418');g.addColorStop(1,'#030607');ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+    ctx.strokeStyle='rgba(120,200,210,.07)';ctx.lineWidth=1;const gs=M/14;const off=(t*6)%gs;
+    for(let x=-gs+off;x<W;x+=gs){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke();}for(let y=-gs+off;y<H;y+=gs){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();}
+    const cx=W*(0.4+(seed%20)/100),cy=H*((S.format==='short'?0.455:0.42)+(seed%5)/200),cw=M*(S.format==='short'?0.44:0.46),ch=cw*1.15;
+    ctx.save();ctx.translate(cx,cy);ctx.rotate(((seed%11)-5)/60+Math.sin(t*0.3)*0.01);
+    ctx.fillStyle='rgba(0,0,0,.5)';ctx.fillRect(-cw/2+12,-ch/2+16,cw,ch);ctx.fillStyle='#d9d4c7';ctx.fillRect(-cw/2,-ch/2,cw,ch);
+    const ig=ctx.createLinearGradient(0,-ch/2,0,ch/2*0.55);ig.addColorStop(0,'#2a3438');ig.addColorStop(1,'#0e1214');ctx.fillStyle=ig;ctx.fillRect(-cw/2+cw*0.06,-ch/2+cw*0.06,cw*0.88,ch*0.68);
+    ctx.fillStyle='rgba(255,255,255,.08)';ctx.beginPath();ctx.arc(0,-ch*0.12,cw*0.22,0,7);ctx.fill();
+    ctx.fillStyle='#1a1a1a';ctx.font=`700 ${Math.round(cw*0.09)}px 'Nanum Gothic Coding',monospace`;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText((s.stamp||word||'EVIDENCE').slice(0,16),0,ch*0.37);
+    ctx.restore();
+    ctx.strokeStyle='rgba(220,40,40,.75)';ctx.lineWidth=M*0.004;ctx.beginPath();ctx.moveTo(cx,cy-ch/2);ctx.quadraticCurveTo(W*0.75,H*0.2,W*0.92,H*(0.12+(seed%9)/100));ctx.stroke();
+    ctx.fillStyle='#d22';ctx.beginPath();ctx.arc(cx,cy-ch/2,M*0.012,0,7);ctx.fill();
+    if(word){ctx.fillStyle='rgba(255,255,255,.05)';ctx.font=`700 ${Math.round(M*0.22)}px 'Nanum Gothic Coding',monospace`;ctx.textAlign='center';ctx.fillText(word.slice(0,6),W/2,H*0.85);}
+  }else if(c==='moving'){
+    const g=ctx.createLinearGradient(0,0,W,H);g.addColorStop(0,'#3a2314');g.addColorStop(.6,'#1c120b');g.addColorStop(1,'#0d0805');ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+    ctx.save();ctx.globalCompositeOperation='screen';
+    for(let k=0;k<3;k++){const x0=W*(0.15+k*0.22)+Math.sin(t*0.2+k)*W*0.02;ctx.fillStyle=`rgba(255,200,130,${0.05+k*0.015})`;ctx.beginPath();ctx.moveTo(x0,0);ctx.lineTo(x0+W*0.12,0);ctx.lineTo(x0+W*0.5,H);ctx.lineTo(x0+W*0.25,H);ctx.closePath();ctx.fill();}
+    for(let j=0;j<18;j++){const r=M*(0.02+((seed>>j)%7)/150);const x=((seed*(j+3))%1000)/1000*W;const y=(H+r)-((t*M*0.02*(1+j%3)+j*H/18)%(H+2*r));
+      const bg=ctx.createRadialGradient(x,y,0,x,y,r);bg.addColorStop(0,'rgba(255,214,150,.35)');bg.addColorStop(1,'rgba(255,214,150,0)');ctx.fillStyle=bg;ctx.beginPath();ctx.arc(x,y,r,0,7);ctx.fill();}
+    ctx.restore();
+    if(word){ctx.fillStyle='rgba(255,230,190,.07)';ctx.font=`800 ${Math.round(M*0.24)}px 'Nanum Myeongjo',serif`;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(word.slice(0,5),W/2,H*0.42);}
+  }else{
+    const g=ctx.createLinearGradient(0,0,0,H);g.addColorStop(0,'#06070b');g.addColorStop(.62,'#1a0f0a');g.addColorStop(1,'#ff7a1a');ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+    ctx.save();ctx.globalCompositeOperation='screen';ctx.translate(W/2,H*1.02);
+    for(let k=0;k<9;k++){ctx.rotate(Math.PI/11);ctx.fillStyle=`rgba(255,170,60,${0.035+0.01*Math.sin(t+k)})`;ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(-M*0.06,-H*1.2);ctx.lineTo(M*0.06,-H*1.2);ctx.closePath();ctx.fill();}
+    ctx.restore();ctx.rotate(0);
+    const n=7,bw=W/(n*1.6);for(let k=0;k<n;k++){const hh=H*(0.06+k*0.045)*(0.6+0.4*easeOut(clamp(p*1.4,0,1)));ctx.fillStyle=`rgba(10,8,8,${0.75})`;ctx.fillRect(W*0.1+k*bw*1.25,H-hh,bw,hh);}
+    if(word){ctx.fillStyle='rgba(255,255,255,.07)';ctx.font=`900 ${Math.round(M*0.26)}px ${SANS}`;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(word.slice(0,5),W/2,H*0.38);}
+  }
+}
+
+/* ================= QA (Claude 검증용) ================= */
+function qaReport(){
+  const tl=buildTimeline(),cps=+$('#inCps').value||CP().cps,short=S.format==='short',issues=[];
+  const [W,H]=dims();const cap=CP().cap;const fs=short?Math.round(W*(cap.mode==='type'?0.064:0.074)):Math.round(H*(cap.mode==='type'?0.048:0.054));
+  cx.save();cx.font=`${cap.weight} ${fs}px ${cap.font}`;
+  S.scenes.forEach((s,i)=>{
+    const n=cleanText(s.text).replace(/\s/g,'').length;const exp=n/cps+(s.text.match(/\//g)||[]).length*0.6;
+    if(!s.audioBuf)issues.push({scene:i+1,type:'no_audio',fix:'retts'});
+    else{const d=s.audioBuf.duration,r=d/Math.max(0.8,exp);
+      if(r>1.9)issues.push({scene:i+1,type:'tts_too_long',ratio:+r.toFixed(2),fix:'retts_no_style',note:'톤 지시가 함께 읽혔거나 지나치게 느림'});
+      if(r<0.45)issues.push({scene:i+1,type:'tts_too_short',ratio:+r.toFixed(2),fix:'retts',note:'일부가 누락됐을 가능성'});
+      const ch=s.audioBuf.getChannelData(0);let pk=0;for(let k=0;k<ch.length;k+=5)pk=Math.max(pk,Math.abs(ch[k]));
+      if(pk>0.995)issues.push({scene:i+1,type:'clipping'});if(pk<0.05)issues.push({scene:i+1,type:'too_quiet',fix:'retts'});}
+    if(s.imgSource==='art'||!s.img)issues.push({scene:i+1,type:'concept_art_background',severity:'info'});
+    tl.scenes[i].chunks.forEach(c=>{const {lines}=wrapWords(cx,c.text.split(/\s+/).filter(Boolean),W*(short?0.84:0.76));if(lines.length>(short?3:2))issues.push({scene:i+1,type:'caption_overflow',lines:lines.length,text:c.text});});
+  });
+  cx.restore();
+  const target=short?(+$('#inLen').value||55):(+$('#inLen').value||10)*60;
+  if(Math.abs(tl.total-target)/target>0.3)issues.push({type:'length_off',total:+tl.total.toFixed(1),target});
+  if(short&&tl.total>180)issues.push({type:'over_shorts_limit',total:+tl.total.toFixed(1)});
+  const srcs=S.scenes.map(s=>s.imgSrc).filter(Boolean);if(srcs.length-new Set(srcs).size>0)issues.push({type:'duplicate_images'});
+  const img={ai:0,wiki:0,art:0,upload:0};S.scenes.forEach(s=>{img[s.imgSource||(s.img?'upload':'art')]++;});
+  return {total:+tl.total.toFixed(1),target,scenes:S.scenes.length,images:img,aiImage:aiImgDisabled?('불가: '+aiImgReason):'가능',ttsStyle:$('#chkStyleTTS').checked,
+    issues,pass:!issues.some(x=>['no_audio','tts_too_long','tts_too_short','too_quiet','caption_overflow','over_shorts_limit'].includes(x.type))};
+}
+
+
+/* ================= 스타일 ================= */
+function readStyle(){const st=S.style;st.acc=$('#stAcc').value;st.dim=+$('#stDim').value;st.grain=+$('#stGrain').value;st.ken=+$('#stKen').value;st.burn=$('#stBurn').checked;st.top=$('#stTop').checked;st.bar=$('#stBar').checked;st.sfx=$('#stSfx').checked;st.amb=$('#stAmb').checked;st.bgmVol=+$('#stBgmVol').value;drawStatic();}
+['stAcc','stDim','stGrain','stKen','stBurn','stTop','stBar','stSfx','stAmb','stBgmVol'].forEach(id=>$('#'+id).addEventListener('input',readStyle));
+$('#btnBgm').onclick=()=>$('#fileBgm').click();
+$('#fileBgm').onchange=async e=>{const f=e.target.files[0];if(!f)return;try{S.bgm=await AC().decodeAudioData(await f.arrayBuffer());S.bgmName=f.name;$('#bgmName').textContent=f.name;}catch(err){toast('BGM을 읽지 못했습니다');}};
+
+/* ================= 타임라인 ================= */
+function splitCaption(text,max){
+  const sents=text.split(/(?<=[.!?…~])\s+|\n+/).map(x=>x.trim()).filter(Boolean);const out=[];
+  sents.forEach(se=>{if(se.replace(/\s/g,'').length<=max){out.push(se);return;}
+    let cur='';se.split(/\s+/).forEach(w=>{const nx=cur?cur+' '+w:w;if(nx.replace(/\s/g,'').length>max&&cur){out.push(cur);cur=w;}else cur=nx;});if(cur)out.push(cur);});
+  return out.length?out:[text];
+}
+function buildTimeline(){
+  const max=S.format==='short'?(S.concept==='moving'?15:12):30;let t=0;const scenes=[];
+  S.scenes.forEach((s,i)=>{
+    const d=sceneDur(s),start=t,end=t+d;const speakEnd=s.audioBuf?start+s.audioBuf.duration:end-0.3;
+    const parts=splitCaption(cleanText(s.text)||' ',max);const w=parts.map(p=>Math.max(1,p.replace(/\s/g,'').length));const sum=w.reduce((a,b)=>a+b,0);
+    let ct=start;const chunks=parts.map((p,k)=>{const cd=(speakEnd-start)*w[k]/sum;const c={text:p,start:ct,end:ct+cd};ct+=cd;return c;});
+    if(chunks.length)chunks[chunks.length-1].end=end;
+    scenes.push({s,i,start,end,chunks});t=end;
+  });
+  return {total:t,scenes};
+}
+
+/* ================= 렌더링 ================= */
+const cv=$('#cv'),cx=cv.getContext('2d');
+const NOISE=[0,1,2].map(()=>{const c=document.createElement('canvas');c.width=c.height=256;const x=c.getContext('2d');const d=x.createImageData(256,256);for(let i=0;i<d.data.length;i+=4){const v=Math.random()*255;d.data[i]=d.data[i+1]=d.data[i+2]=v;d.data[i+3]=255;}x.putImageData(d,0,0);return c;});
+function hash(str){let h=0;for(const c of str)h=(h*31+c.charCodeAt(0))|0;return Math.abs(h);}
+function rr(ctx,x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath();}
+function drawCover(ctx,img,W,H,scale,ox,oy){const r=Math.max(W/img.width,H/img.height)*scale;const w=img.width*r,h=img.height*r;ctx.drawImage(img,(W-w)/2+ox,(H-h)/2+oy,w,h);}
+function isEmph(w,emph){const c=w.replace(/[^\p{L}\p{N}]/gu,'');return !!c&&emph.some(e=>e&&(c.includes(e)||(e.includes(c)&&c.length>=2)));}
+function capState(sc,t){
+  const ch=sc.chunks.find(c=>t>=c.start&&t<c.end)||sc.chunks[sc.chunks.length-1];
+  const words=ch.text.split(/\s+/).filter(Boolean);const p=clamp((t-ch.start)/Math.max(.01,ch.end-ch.start),0,1);
+  const active=Math.min(words.length-1,Math.floor(p*words.length*1.08));
+  return {ch,words,p,active,emphOn:isEmph(words[active]||'',sc.s.emph||[])};
+}
+function drawBg(ctx,W,H,sc,p,t,punch){
+  const C=CP(),s=sc.s;ctx.save();
+  let f=C.filter;if(C.flicker)f+=` brightness(${(1-C.flicker*Math.random()).toFixed(3)})`;ctx.filter=f;
+  if(s.img){
+    const k=p*S.style.ken*C.ken;const dir=sc.i%4;
+    const scale=1.05+0.09*(dir===1?Math.max(0,1-k):Math.min(1.4,k))+punch;
+    const ox=(dir===2?1:dir===3?-1:0)*Math.min(1.4,k)*W*0.035,oy=(dir===0?-1:0)*Math.min(1.4,k)*H*0.02;
+    drawCover(ctx,s.img,W,H,scale,ox,oy);
+  }else{
+    ctx.filter='none';drawArt(ctx,W,H,sc,p,t);
+  }
+  ctx.restore();
+}
+function drawLook(ctx,W,H,frame){
+  const C=CP(),d=S.style.dim/100;
+  ctx.save();ctx.globalCompositeOperation='soft-light';ctx.fillStyle=C.tint;ctx.fillRect(0,0,W,H);ctx.restore();
+  ctx.fillStyle=`rgba(0,0,0,${d*0.55})`;ctx.fillRect(0,0,W,H);
+  const g=ctx.createLinearGradient(0,0,0,H);
+  if(S.format==='short'){g.addColorStop(0,`rgba(0,0,0,${d+.2})`);g.addColorStop(.25,'rgba(0,0,0,0)');g.addColorStop(.5,'rgba(0,0,0,0)');g.addColorStop(1,`rgba(0,0,0,${d+.3})`);}
+  else{g.addColorStop(.55,'rgba(0,0,0,0)');g.addColorStop(1,`rgba(0,0,0,${d+.3})`);}
+  ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+  const v=ctx.createRadialGradient(W/2,H/2,Math.min(W,H)*0.35,W/2,H/2,Math.hypot(W,H)*0.55);v.addColorStop(0,'rgba(0,0,0,0)');v.addColorStop(1,`rgba(0,0,0,${C.vignette})`);ctx.fillStyle=v;ctx.fillRect(0,0,W,H);
+  if(S.style.grain>0){ctx.save();ctx.globalAlpha=S.style.grain/100*1.6;ctx.globalCompositeOperation='overlay';const pat=ctx.createPattern(NOISE[frame%3],'repeat');ctx.translate((frame*37)%256,(frame*53)%256);ctx.fillStyle=pat;ctx.fillRect(-256,-256,W+512,H+512);ctx.restore();}
+  if(C.letterbox&&S.format==='long'){const bh=(H-W/2.39)/2;ctx.fillStyle='#000';ctx.fillRect(0,0,W,bh);ctx.fillRect(0,H-bh,W,bh);}
+}
+function wrapWords(ctx,words,maxW){
+  const sp=ctx.measureText(' ').width;const lines=[];let cur=[],cw=0;
+  words.forEach((w,i)=>{const ww=ctx.measureText(w).width;if(cur.length&&cw+sp+ww>maxW){lines.push({items:cur,w:cw});cur=[];cw=0;}cw+=(cur.length?sp:0)+ww;cur.push({w,i,ww});});
+  if(cur.length)lines.push({items:cur,w:cw});return {lines,sp};
+}
+function drawCaption(ctx,W,H,sc,st,t){
+  if(!S.style.burn||!st.ch)return;
+  const C=CP(),cap=C.cap,short=S.format==='short',emph=sc.s.emph||[];const acc=S.style.acc;
+  const fs=short?Math.round(W*(cap.mode==='type'?0.064:0.074)):Math.round(H*(cap.mode==='type'?0.048:0.054));
+  ctx.font=`${cap.weight} ${fs}px ${cap.font}`;ctx.textAlign='left';ctx.textBaseline='middle';ctx.lineJoin='round';
+  const {lines,sp}=wrapWords(ctx,st.words,W*(short?0.84:0.76));const lh=fs*(cap.mode==='fade'?1.45:1.28);
+  const lb=CP().letterbox&&!short?(H-W/2.39)/2:0;
+  const cy=short?H*(cap.mode==='fade'?0.68:0.65):H-Math.max(H*0.1,lb*0.5+lh*0.2)-lh*(lines.length-1)/2;
+  const tIn=t-st.ch.start;ctx.save();ctx.translate(W/2,cy);
+  if(cap.mode==='fade'){
+    const a=easeOut(clamp(tIn/0.45,0,1));ctx.globalAlpha=a;ctx.translate(0,(1-a)*fs*0.35);
+    ctx.shadowColor='rgba(0,0,0,.9)';ctx.shadowBlur=fs*0.4;
+    lines.forEach((ln,li)=>{let x=-ln.w/2;const y=(li-(lines.length-1)/2)*lh;ln.items.forEach(it=>{ctx.fillStyle=isEmph(it.w,emph)?acc:cap.color;ctx.fillText(it.w,x,y);x+=it.ww+sp;});});
+  }else if(cap.mode==='pop'){
+    const pop=easeOut(clamp(tIn/0.12,0,1));ctx.scale(0.84+0.16*pop,0.84+0.16*pop);
+    lines.forEach((ln,li)=>{let x=-ln.w/2;const y=(li-(lines.length-1)/2)*lh;ln.items.forEach(it=>{
+      const e=isEmph(it.w,emph),on=it.i===st.active;ctx.save();ctx.translate(x+it.ww/2,y);
+      if(on){const s=e?1.18:1.06;ctx.scale(s,s);if(e)ctx.rotate(Math.sin(t*40)*0.015);}
+      ctx.lineWidth=fs*0.2;ctx.strokeStyle='rgba(0,0,0,.95)';ctx.strokeText(it.w,-it.ww/2,0);
+      ctx.fillStyle=e?acc:(on?acc:cap.color);if(!e&&!on&&it.i>st.active)ctx.fillStyle='rgba(255,255,255,.92)';ctx.fillText(it.w,-it.ww/2,0);ctx.restore();x+=it.ww+sp;});});
+  }else{
+    const total=st.words.join('').length;const shown=Math.max(1,Math.floor(clamp(st.p*1.7,0,1)*total));
+    const bw=Math.max(...lines.map(l=>l.w))+fs*1.1,bh=lh*lines.length+fs*0.5;
+    ctx.fillStyle='rgba(5,8,10,.72)';ctx.fillRect(-bw/2,-bh/2,bw,bh);ctx.fillStyle=acc;ctx.fillRect(-bw/2,-bh/2,fs*0.12,bh);
+    let cnt=0,lastX=0,lastY=0;
+    lines.forEach((ln,li)=>{let x=-ln.w/2;const y=(li-(lines.length-1)/2)*lh;ln.items.forEach(it=>{
+      if(cnt<shown){const vis=it.w.slice(0,shown-cnt);ctx.fillStyle=isEmph(it.w,emph)?acc:cap.color;ctx.fillText(vis,x,y);lastX=x+ctx.measureText(vis).width;lastY=y;}
+      cnt+=it.w.length;x+=it.ww+sp;});});
+    if(shown<total||Math.floor(t*2.2)%2===0){ctx.fillStyle=acc;ctx.fillRect(lastX+fs*0.06,lastY-fs*0.42,fs*0.08,fs*0.84);}
+  }
+  ctx.restore();
+}
+function drawTop(ctx,W,H,sc){
+  const C=CP(),short=S.format==='short';
+  if(short&&S.style.top&&S.title){
+    const fs=Math.round(W*0.054);const font=S.concept==='moving'?"'Nanum Myeongjo',serif":S.concept==='mystery'?"'Nanum Gothic Coding',monospace":SANS;
+    ctx.font=`800 ${fs}px ${font}`;ctx.textAlign='left';ctx.textBaseline='middle';
+    const {lines,sp}=wrapWords(ctx,S.title.split(/\s+/),W*0.82);const L=lines.slice(0,2);const lh=fs*1.32;
+    const bw=Math.max(...L.map(l=>l.w))+fs*1.0,bh=lh*L.length+fs*0.5;const y0=H*0.08;
+    ctx.fillStyle=S.concept==='moving'?'rgba(20,12,4,.55)':'rgba(0,0,0,.75)';rr(ctx,(W-bw)/2,y0,bw,bh,S.concept==='mystery'?4:fs*0.3);ctx.fill();
+    ctx.fillStyle=S.style.acc;ctx.fillRect((W-bw)/2+fs*0.35,y0+bh-fs*0.2,bw-fs*0.7,fs*0.07);
+    L.forEach((ln,li)=>{let x=(W-ln.w)/2;ln.items.forEach(it=>{ctx.fillStyle='#fff';ctx.fillText(it.w,x,y0+fs*0.25+lh*(li+0.5));x+=it.ww+sp;});});
+  }
+  if(S.concept==='mystery'){
+    let stamp='';for(let k=sc.i;k>=0;k--){if(S.scenes[k]?.stamp){stamp=S.scenes[k].stamp;break;}}
+    const fs=Math.round((short?W:H)*0.037);ctx.font=`700 ${fs}px 'Nanum Gothic Coding',monospace`;ctx.textAlign='left';ctx.textBaseline='middle';
+    const x0=short?W*0.08:W*0.035,y0=short?H*0.255:H*0.07;
+    ctx.fillStyle=S.style.acc;ctx.beginPath();ctx.arc(x0+fs*0.3,y0,fs*0.28,0,7);ctx.fill();
+    ctx.fillStyle='#fff';ctx.fillText('CASE FILE · UNSOLVED',x0+fs*0.9,y0);
+    if(stamp){ctx.fillStyle='rgba(255,255,255,.82)';ctx.fillText(stamp,x0+fs*0.9,y0+fs*1.4);}
+  }
+  if(!short){
+    let chap='';for(let k=sc.i;k>=0;k--){if(S.scenes[k]?.chapter){chap=S.scenes[k].chapter;break;}}
+    if(chap){const fs=Math.round(H*0.028);ctx.font=`700 ${fs}px ${SANS}`;ctx.textBaseline='middle';ctx.textAlign='left';const w=ctx.measureText(chap).width+fs*1.4;
+      const x=W-w-W*0.03,y=(C.letterbox?(H-W/2.39)/2+H*0.02:H*0.05);ctx.fillStyle='rgba(0,0,0,.6)';rr(ctx,x,y,w,fs*1.9,fs*0.4);ctx.fill();ctx.fillStyle=S.style.acc;ctx.fillRect(x+fs*0.5,y+fs*0.55,fs*0.15,fs*0.8);ctx.fillStyle='#fff';ctx.fillText(chap,x+fs*0.9,y+fs*0.95);}
+  }
+}
+function glitch(ctx,W,H,k,frame){
+  const amt=(1-k);let seed=frame*9301+49297;const rnd=()=>((seed=(seed*9301+49297)%233280)/233280);
+  for(let n=0;n<10;n++){const y=rnd()*H,h=rnd()*H*0.06+4,off=(rnd()-0.5)*W*0.12*amt;ctx.drawImage(ctx.canvas,0,y,W,h,off,y,W,h);}
+  ctx.save();ctx.globalCompositeOperation='screen';ctx.globalAlpha=0.35*amt;ctx.fillStyle='#ff0040';ctx.fillRect(rnd()*W*0.02,0,W,H);ctx.fillStyle='#00e5ff';ctx.fillRect(-rnd()*W*0.02,0,W,H);ctx.restore();
+}
+let frameNo=0;
+function drawFrame(ctx,W,H,tl,t){
+  frameNo++;ctx.clearRect(0,0,W,H);
+  if(!tl.scenes.length){ctx.fillStyle='#111';ctx.fillRect(0,0,W,H);ctx.fillStyle='#666';ctx.font=`700 ${W*0.04}px ${SANS}`;ctx.textAlign='center';ctx.fillText('1단계에서 분석·재창조를 실행하세요',W/2,H/2);return;}
+  const C=CP();let idx=tl.scenes.findIndex(sc=>t>=sc.start&&t<sc.end);if(idx<0)idx=tl.scenes.length-1;
+  const sc=tl.scenes[idx];const p=clamp((t-sc.start)/(sc.end-sc.start),0,1);const st=capState(sc,t);
+  const k=idx>0?clamp((t-sc.start)/C.trans.dur,0,1):1;
+  let punch=0;if(C.cap.mode==='pop'){punch+=(1-easeOut(clamp((t-sc.start)/0.35,0,1)))*0.07;if(st.emphOn)punch+=0.035;}
+  drawBg(ctx,W,H,sc,p,t,punch);
+  if(C.trans.type==='fade'&&k<1){ctx.save();ctx.globalAlpha=1-k;drawBg(ctx,W,H,tl.scenes[idx-1],1,t,0);ctx.restore();}
+  drawLook(ctx,W,H,frameNo);
+  if(C.trans.type==='flash'&&k<1){ctx.fillStyle=`rgba(255,255,255,${(1-k)*0.8})`;ctx.fillRect(0,0,W,H);}
+  if(C.trans.type==='glitch'&&k<1)glitch(ctx,W,H,k,frameNo);
+  drawCaption(ctx,W,H,sc,st,t);drawTop(ctx,W,H,sc);
+  if(S.style.bar){const bh=H*0.005;ctx.fillStyle='rgba(255,255,255,.18)';ctx.fillRect(0,H-bh,W,bh);ctx.fillStyle=S.style.acc;ctx.fillRect(0,H-bh,W*clamp(t/tl.total,0,1),bh);}
+}
+function drawStatic(){const [W,H]=dims();if(cv.width!==W||cv.height!==H){cv.width=W;cv.height=H;}const tl=buildTimeline();$('#seek').max=tl.total||1;const t=Math.min(+$('#seek').value,tl.total);drawFrame(cx,W,H,tl,t);$('#timeLbl').textContent=`${t.toFixed(1)}s / ${tl.total.toFixed(1)}s`;}
+$('#seek').oninput=drawStatic;
+
+/* ================= 오디오: 효과음·앰비언트 합성 ================= */
+let NB=null;function noiseBuf(ac){if(!NB){NB=ac.createBuffer(1,ac.sampleRate*2,ac.sampleRate);const d=NB.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1;}return NB;}
+function env(g,t,a,peak,d){g.gain.setValueAtTime(0.0001,t);g.gain.exponentialRampToValueAtTime(Math.max(peak,0.0002),t+a);g.gain.exponentialRampToValueAtTime(0.0001,t+a+d);}
+function sfx(ac,out,type,t,srcs){
+  const gainTo=()=>{const g=ac.createGain();g.connect(out);return g;};
+  const noise=(t0,dur,ft,f0,f1,peak,a=0.01)=>{t0=Math.max(ac.currentTime,t0);const s=ac.createBufferSource();s.buffer=noiseBuf(ac);s.loop=true;const f=ac.createBiquadFilter();f.type=ft;f.frequency.setValueAtTime(f0,t0);if(f1)f.frequency.exponentialRampToValueAtTime(f1,t0+a+dur);const g=gainTo();env(g,t0,a,peak,dur);s.connect(f);f.connect(g);s.start(t0);s.stop(t0+a+dur+0.05);srcs.push(s);};
+  const tone=(t0,dur,wt,f0,f1,peak,a=0.005)=>{t0=Math.max(ac.currentTime,t0);const o=ac.createOscillator();o.type=wt;o.frequency.setValueAtTime(f0,t0);if(f1)o.frequency.exponentialRampToValueAtTime(f1,t0+a+dur);const g=gainTo();env(g,t0,a,peak,dur);o.connect(g);o.start(t0);o.stop(t0+a+dur+0.05);srcs.push(o);};
+  switch(type){
+    case 'hit':noise(t,0.35,'lowpass',1200,180,0.55);tone(t,0.8,'sine',95,38,0.85);break;
+    case 'boom':tone(t,2.2,'sine',58,28,0.95,0.01);noise(t,1.2,'lowpass',380,90,0.3);break;
+    case 'whoosh':noise(t-0.25,0.35,'bandpass',300,5000,0.4,0.3);break;
+    case 'riser':{const t0=Math.max(ac.currentTime,t-2);const d=Math.max(0.3,t-t0);noise(t0,0.08,'highpass',200,7000,0.28,d);tone(t0,0.08,'sawtooth',110,520,0.05,d);break;}
+    case 'heartbeat':for(let r=0;r<2;r++){tone(t+r*0.9,0.18,'sine',62,42,0.9);tone(t+r*0.9+0.26,0.16,'sine',58,40,0.6);}break;
+    case 'typewriter':for(let i=0;i<8;i++)noise(t+i*0.085+Math.random()*0.03,0.03,'highpass',2500,null,0.22,0.002);break;
+    case 'chime':tone(t,2.4,'sine',880,null,0.14,0.01);tone(t,2.0,'sine',1318.5,null,0.07,0.01);tone(t+0.12,1.8,'sine',1760,null,0.04,0.01);break;
+  }
+}
+function ambient(ac,out,T,t0,srcs){
+  const C=CP();const bus=ac.createGain();bus.gain.value=1;const lp=ac.createBiquadFilter();lp.type='lowpass';lp.frequency.value=C.ambient==='drone'?600:1800;lp.connect(bus);bus.connect(out);
+  const osc=(f,wt,g0,ts,te,att=1.2,rel=1.5)=>{const o=ac.createOscillator();o.type=wt;o.frequency.value=f;const g=ac.createGain();g.gain.setValueAtTime(0,ts);g.gain.linearRampToValueAtTime(g0,ts+att);g.gain.setValueAtTime(g0,Math.max(ts+att,te-rel));g.gain.linearRampToValueAtTime(0,te);o.connect(g);g.connect(lp);o.start(ts);o.stop(te+0.05);srcs.push(o);};
+  if(C.ambient==='drone'){
+    [[55,'sine',.22],[58.3,'sine',.16],[110,'triangle',.05],[164.8,'sine',.025]].forEach(([f,w,g])=>osc(f,w,g,t0,t0+T,2.5,2));
+    const n=ac.createBufferSource();n.buffer=noiseBuf(ac);n.loop=true;const nf=ac.createBiquadFilter();nf.type='bandpass';nf.frequency.value=320;nf.Q.value=0.7;const ng=ac.createGain();ng.gain.setValueAtTime(0,t0);ng.gain.linearRampToValueAtTime(0.05,t0+3);ng.gain.setValueAtTime(0.05,t0+Math.max(3,T-2));ng.gain.linearRampToValueAtTime(0,t0+T);n.connect(nf);nf.connect(ng);ng.connect(bus);n.start(t0);n.stop(t0+T+0.1);srcs.push(n);
+  }else{
+    const prog=C.ambient==='warm'?[[261.63,329.63,392],[196,246.94,293.66],[220,261.63,329.63],[174.61,220,261.63]]:[[220,261.63,329.63],[174.61,220,261.63],[261.63,329.63,392],[196,246.94,293.66]];
+    const bar=C.ambient==='warm'?4:3;let n=0;
+    for(let ts=0;ts<T;ts+=bar,n++){const ch=prog[n%4];const te=Math.min(T,ts+bar+0.6);
+      ch.forEach((f,j)=>{osc(f,'triangle',0.035,t0+ts,t0+te,0.9,0.8);osc(f*1.003,'sine',0.02,t0+ts,t0+te,0.9,0.8);});
+      osc(ch[0]/2,'sine',0.06,t0+ts,t0+te,0.6,0.6);
+      if(C.ambient==='build'){const lvl=Math.min(1,ts/(T*0.75));for(let b=0;b<bar*2;b++){const bt=t0+ts+b*0.5;if(bt<t0+T-0.5){const o=ac.createOscillator();o.type='sine';o.frequency.setValueAtTime(70,bt);o.frequency.exponentialRampToValueAtTime(40,bt+0.2);const g=ac.createGain();env(g,bt,0.005,0.05+0.25*lvl,0.22);o.connect(g);g.connect(bus);o.start(bt);o.stop(bt+0.3);srcs.push(o);}}}
+    }
+    if(C.ambient==='build'){bus.gain.setValueAtTime(0.65,t0);bus.gain.linearRampToValueAtTime(1.25,t0+T*0.85);}
+  }
+}
+function scheduleAudio(ac,out,tl,t0){
+  const srcs=[];const comp=ac.createDynamicsCompressor();comp.threshold.value=-20;comp.ratio.value=3.5;comp.attack.value=0.005;comp.release.value=0.15;
+  const voice=ac.createGain();voice.gain.value=1.0;comp.connect(voice);voice.connect(out);
+  tl.scenes.forEach(sc=>{if(!sc.s.audioBuf)return;const b=ac.createBufferSource();b.buffer=sc.s.audioBuf;b.connect(comp);b.start(t0+sc.start);srcs.push(b);});
+  const music=ac.createGain();music.connect(out);const v=S.style.bgmVol;
+  music.gain.setValueAtTime(0,t0);music.gain.linearRampToValueAtTime(v,t0+1);
+  tl.scenes.forEach(sc=>{if(!sc.s.audioBuf)return;music.gain.setTargetAtTime(v*0.4,Math.max(0,t0+sc.start-0.05),0.08);music.gain.setTargetAtTime(v,t0+sc.start+sc.s.audioBuf.duration,0.3);});
+  music.gain.setTargetAtTime(0,t0+Math.max(0,tl.total-1.8),0.5);
+  if(S.bgm){const b=ac.createBufferSource();b.buffer=S.bgm;b.loop=true;b.connect(music);b.start(t0);b.stop(t0+tl.total+0.3);srcs.push(b);}
+  else if(S.style.amb)ambient(ac,music,tl.total,t0,srcs);
+  if(S.style.sfx){const fx=ac.createGain();fx.gain.value=0.7;fx.connect(out);tl.scenes.forEach(sc=>{if(sc.s.sfx&&sc.s.sfx!=='none')sfx(ac,fx,sc.s.sfx,t0+sc.start,srcs);});}
+  return srcs;
+}
+
+/* ================= 재생·렌더 ================= */
+let play=null,lastVideoName='';
+async function ensureFonts(){try{await Promise.all([`800 40px 'Nanum Myeongjo'`,`700 40px 'Nanum Gothic Coding'`,`900 40px Pretendard`].map(f=>document.fonts.load(f,'가나다')));}catch(e){}await document.fonts.ready;}
+function stopPlay(){if(!play)return;cancelAnimationFrame(play.raf);play.srcs.forEach(s=>{try{s.stop();}catch(e){}});if(play.rec&&play.rec.state!=='inactive')play.rec.stop();play=null;}
+async function start(mode){
+  stopPlay();const tl=buildTimeline();if(!tl.scenes.length)return toast('씬이 없습니다');
+  await ensureFonts();const ac=AC();const [W,H]=dims();if(cv.width!==W||cv.height!==H){cv.width=W;cv.height=H;}
+  let rec=null,dest=null;
+  if(mode==='record'){
+    dest=ac.createMediaStreamDestination();
+    const stream=new MediaStream([...cv.captureStream(30).getVideoTracks(),...dest.stream.getAudioTracks()]);
+    const types=['video/mp4;codecs=avc1.640028,mp4a.40.2','video/mp4;codecs=avc1.42E01E,mp4a.40.2','video/mp4','video/webm;codecs=vp9,opus','video/webm;codecs=vp8,opus','video/webm'];
+    const mime=types.find(t=>MediaRecorder.isTypeSupported(t))||'';
+    rec=new MediaRecorder(stream,{mimeType:mime,videoBitsPerSecond:S.format==='short'?10e6:12e6,audioBitsPerSecond:192000});
+    const chunks=[];rec.ondataavailable=e=>e.data.size&&chunks.push(e.data);
+    rec.onstop=()=>{const ext=mime.includes('mp4')?'mp4':'webm';const blob=new Blob(chunks,{type:mime||'video/webm'});const url=URL.createObjectURL(blob);
+      const name=`${(S.title||'video').replace(/[\\/:*?"<>|]/g,'').slice(0,40)}_${S.concept}_${S.format}.${ext}`;lastVideoName=name;
+      $('#dlArea').innerHTML=`<a href="${url}" download="${name}"><button class="pri">⬇ ${escapeHtml(name)} (${(blob.size/1e6).toFixed(1)}MB)</button></a>`;$('#renderMsg').textContent='렌더 완료 → 5단계에서 썸네일·메타데이터·쌤컷 지시문을 챙기세요.';toast('렌더 완료');};
+    rec.start(1000);
+  }
+  const out=ac.createGain();out.connect(ac.destination);if(dest)out.connect(dest);
+  const t0=ac.currentTime+0.3;const srcs=scheduleAudio(ac,out,tl,t0);play={raf:0,srcs,rec};
+  const loop=()=>{const t=ac.currentTime-t0;drawFrame(cx,W,H,tl,Math.max(0,t));
+    $('#progBar').style.width=(clamp(t/tl.total,0,1)*100)+'%';$('#timeLbl').textContent=`${Math.max(0,t).toFixed(1)}s / ${tl.total.toFixed(1)}s`;
+    if(t>=tl.total+0.3){if(rec)setTimeout(()=>{if(rec.state!=='inactive')rec.stop();},150);cancelAnimationFrame(play.raf);play=null;return;}
+    play.raf=requestAnimationFrame(loop);};
+  play.raf=requestAnimationFrame(loop);
+  if(mode==='record')$('#renderMsg').textContent=`렌더 중... 약 ${Math.ceil(tl.total)}초. 탭을 전환하지 마세요.`;
+}
+$('#btnPreview').onclick=()=>start('preview');
+$('#btnStop').onclick=()=>{stopPlay();toast('정지');};
+$('#btnRender').onclick=()=>{runChecks();start('record');};
+document.addEventListener('visibilitychange',()=>{if(document.hidden&&play&&play.rec)toast('⚠ 렌더 중 탭이 숨겨짐 — 프레임이 끊길 수 있습니다');});
+
+/* ================= 점검 ================= */
+function shingles(t,n=7){t=t.replace(/[\s\p{P}\/]/gu,'');const s=new Set();for(let i=0;i+n<=t.length;i++)s.add(t.slice(i,i+n));return s;}
+function runChecks(){
+  const tl=buildTimeline(),out=[],short=S.format==='short';const add=(c,m)=>out.push(`<div class="${c}">${m}</div>`);
+  const trans=$('#inTrans').value.trim();
+  if(trans&&S.scenes.length){const A=shingles(S.scenes.map(s=>s.text).join(' ')),B=shingles(trans);let hit=0;A.forEach(x=>{if(B.has(x))hit++;});const r=A.size?hit/A.size:0;
+    r>0.15?add('b',`✖ 원본 스크립트와 표현 겹침 ${(r*100).toFixed(0)}% — 15% 미만으로 다시 쓰세요(재사용·저작권 위험).`):add('o',`✔ 원본과 표현 겹침 ${(r*100).toFixed(0)}%`);}
+  else if(S.source.url)add('w','⚠ 원본 스크립트가 없어 표현 겹침을 검사하지 못했습니다 — 1단계에 붙여넣으면 검사됩니다.');
+  if(!$('#inAngle').value.trim()&&!(S.recreation&&S.recreation.angle))add('b','✖ 원본과 다른 관점이 없음 — 유튜브 수익화 정책의 "반복적·템플릿형 콘텐츠" 위험');
+  const nv=S.scenes.filter(s=>!s.audioBuf).length;
+  if(nv===S.scenes.length&&S.scenes.length)add('b','✖ 내레이션 없음 — 음성 없는 이미지+자막은 "이미지 슬라이드쇼"로 분류될 위험');else if(nv)add('w',`⚠ 음성 없는 씬 ${nv}개`);else if(S.scenes.length)add('o','✔ 모든 씬 녹음됨');
+  const ni=S.scenes.filter(s=>!s.img).length;if(ni)add('w',`⚠ 컨셉 아트 배경 씬 ${ni}개`);if(S.scenes.some(s=>s.imgSource==='ai'))add('w','⚠ AI 생성 이미지 포함 — 업로드 시 \'변경되거나 합성된 콘텐츠\' 공개 선택');
+  const srcs=S.scenes.map(s=>s.imgSrc).filter(Boolean);if(srcs.length-new Set(srcs).size>0)add('w','⚠ 같은 이미지 반복');
+  const vl=S.analysis?.verifyList?.length||0;if(vl)add('w',`⚠ 사실 확인 필요 ${vl}건 — 1단계 분석 패널 참조. 확인 전 업로드 금지 권장.`);
+  const rk=S.analysis?.risks?.length||0;if(rk)add('b',`✖ 위험 요소 ${rk}건 — 1단계 분석 패널에서 하나씩 해소하세요.`);
+  if(S.concept==='mystery'){const bad=S.scenes.filter(s=>/범인은\s*\S+(이다|였다)|진범/.test(s.text)).length;if(bad)add('b',`✖ 범인 단정 표현 ${bad}곳 — "~로 지목됐다", "확인되지 않았다"로 바꾸세요(명예훼손 위험).`);}
+  const sfxN=S.scenes.filter(s=>s.sfx&&s.sfx!=='none').length;if(S.scenes.length&&sfxN/S.scenes.length>0.35)add('w',`⚠ 효과음 ${sfxN}개 — 과하면 싸구려처럼 들립니다(25% 이하 권장).`);
+  if(short){
+    if(S.scenes[0]){const n=cleanText(S.scenes[0].text).replace(/\s/g,'').length;n>18?add('w',`⚠ 훅 ${n}자 — 16자 안팎 권장`):add('o','✔ 훅 길이 적정');}
+    if(tl.total>180)add('b','✖ 3분 초과 — 쇼츠로 분류되지 않음');else if(tl.total>70)add('w',`⚠ ${tl.total.toFixed(0)}초 — 쇼츠는 최대 3분까지 가능하지만 길수록 완주율이 떨어지기 쉽습니다.`);
+  }else{const ch=S.scenes.filter(s=>s.chapter).length;ch<3?add('w','⚠ 챕터 3개 미만 — 설명란 챕터 미생성'):add('o',`✔ 챕터 ${ch}개`);}
+  add('o',`총 ${tl.total.toFixed(1)}초 · ${S.scenes.length}씬 · ${CP().name}`);
+  $('#checks').innerHTML=out.join('');
+}
+
+/* ================= 패키지 ================= */
+function fmtTS(sec){sec=Math.floor(sec);const h=Math.floor(sec/3600),m=Math.floor(sec%3600/60),s=sec%60;return (h?h+':'+String(m).padStart(2,'0'):m)+':'+String(s).padStart(2,'0');}
+function srtTime(t){const ms=Math.round(t*1000);const h=Math.floor(ms/3600000),m=Math.floor(ms%3600000/60000),s=Math.floor(ms%60000/1000),r=ms%1000;return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')},${String(r).padStart(3,'0')}`;}
+function buildMeta(){
+  const tl=buildTimeline();let desc=S.meta.description||'';
+  if(S.format==='long'){const ch=tl.scenes.filter(sc=>sc.s.chapter);if(ch.length>=3){const lines=ch.map((sc,k)=>`${k===0?'0:00':fmtTS(sc.start)} ${sc.s.chapter}`);if(ch[0].start>0)lines.unshift('0:00 인트로');desc+='\n\n[챕터]\n'+lines.join('\n');}}
+  if(S.source.url)desc=desc.replace('[출처]','')+`\n\n[참고 자료] ${S.source.title?S.source.title+' — ':''}${S.source.url}`;
+  const cred=S.scenes.filter(x=>x.imgSource==='wiki'&&x.credit).map(x=>'- '+x.credit);if(cred.length)desc+='\n\n[이미지 출처 · Wikimedia Commons]\n'+[...new Set(cred)].join('\n');
+  if(S.scenes.some(x=>x.imgSource==='ai'))desc+='\n\n※ 일부 장면은 AI로 생성한 재현 이미지입니다.';
+  if(S.meta.hashtags?.length)desc+='\n\n'+S.meta.hashtags.join(' ');
+  return `■ 제목 후보\n${(S.meta.titles.length?S.meta.titles:[S.title]).map((t,i)=>`${i+1}. ${t}`).join('\n')}\n\n■ 설명\n${desc}\n\n■ 태그\n${(S.meta.tags||[]).join(', ')}\n\n■ 업로드 체크\n- 실사처럼 보이는 AI 생성 장면이 있으면 '변경되거나 합성된 콘텐츠' 공개 선택\n- 사실 확인 목록(1단계)을 모두 확인했는지\n${S.concept==='mystery'?'- 피해자·유족 실명/사진 사용 여부 재확인\n':''}${S.concept!=='mystery'?'- 검증 안 된 사연이면 설명란에 \'재구성\' 표기\n':''}`;
+}
+function buildSsam(){
+  const tl=buildTimeline(),[W,H]=dims(),name=lastVideoName||'(렌더한 영상 파일명)';
+  const ch=tl.scenes.filter(sc=>sc.s.chapter).map(sc=>`${sc.start.toFixed(1)}s "${sc.s.chapter}"`).join(', ');
+  return `[쌤컷 마무리 작업 요청]
+쌤컷 편집기에 '${name}' 파일을 가져왔어. 쌤컷 도구로 아래 순서대로 마무리해줘.
+
+1. get_project로 상태 확인. 프로젝트가 없으면 ${W}x${H} 캔버스로 create_project.
+2. list_assets에서 '${name}'을 찾아 add_media로 0초에 배치.
+3. 이 영상에는 컨셉(${CP().name}) 색보정·자막·효과음·음악이 이미 들어 있어. 효과·필터·자막을 중복으로 추가하지 마.
+4. ${S.format==='long'&&ch?`챕터 시작 지점(${ch})의 프레임을 get_frame으로 확인하고, 화면이 너무 어두우면 알려줘.`:'0초·중간·마지막 프레임을 get_frame으로 확인하고 자막이 잘리거나 가려진 곳이 있으면 알려줘.'}
+5. export_video로 MP4 내보내기, get_status로 완료까지 확인.`;
+}
+function refreshPack(){$('#metaOut').textContent=buildMeta();$('#ssamOut').textContent=buildSsam();if(!$('#inThumb').value&&S.meta.thumbText)$('#inThumb').value=S.meta.thumbText;drawThumb();}
+function drawThumb(){
+  const c=$('#thumb'),x=c.getContext('2d'),W=1280,H=720,C=CP();x.clearRect(0,0,W,H);
+  const s=S.scenes[clamp((+$('#inThumbScene').value||1)-1,0,Math.max(0,S.scenes.length-1))];
+  x.save();x.filter=C.filter;if(s&&s.img)drawCover(x,s.img,W,H,1.05,0,0);else{const g=x.createLinearGradient(0,0,W,H);g.addColorStop(0,'#2a2140');g.addColorStop(1,'#0c0c12');x.fillStyle=g;x.fillRect(0,0,W,H);}x.restore();
+  x.save();x.globalCompositeOperation='soft-light';x.fillStyle=C.tint;x.fillRect(0,0,W,H);x.restore();
+  const g2=x.createLinearGradient(0,0,W,0);g2.addColorStop(0,'rgba(0,0,0,.88)');g2.addColorStop(.62,'rgba(0,0,0,.25)');g2.addColorStop(1,'rgba(0,0,0,0)');x.fillStyle=g2;x.fillRect(0,0,W,H);
+  const lines=($('#inThumb').value||S.title||'').split('\n').filter(Boolean).slice(0,3);
+  const font=C.cap.font;let fs=lines.length>2?112:140;x.font=`${C.cap.weight} ${fs}px ${font}`;const mw=Math.max(1,...lines.map(l=>x.measureText(l).width));if(mw>W*0.78){fs=Math.floor(fs*W*0.78/mw);x.font=`${C.cap.weight} ${fs}px ${font}`;}
+  x.textAlign='left';x.textBaseline='middle';x.lineJoin='round';const lh=fs*1.14;const y0=H/2-lh*(lines.length-1)/2;
+  lines.forEach((l,i)=>{const y=y0+i*lh;if(S.concept==='moving'){x.shadowColor='rgba(0,0,0,.9)';x.shadowBlur=30;}else{x.lineWidth=fs*0.16;x.strokeStyle='#000';x.strokeText(l,70,y);}x.fillStyle=i===lines.length-1?S.style.acc:'#fff';x.fillText(l,70,y);x.shadowBlur=0;});
+  if(S.concept==='mystery'){x.save();x.translate(W-210,120);x.rotate(-0.18);x.strokeStyle=S.style.acc;x.lineWidth=8;x.strokeRect(-150,-50,300,100);x.fillStyle=S.style.acc;x.font=`700 58px 'Nanum Gothic Coding',monospace`;x.textAlign='center';x.fillText('미 제',0,4);x.restore();}
+  else{x.fillStyle=S.style.acc;x.fillRect(70,y0-lh/2-26,140,12);}
+}
+['inThumb','inThumbScene'].forEach(id=>$('#'+id).addEventListener('input',drawThumb));
+$('#btnThumbDraw').onclick=()=>ensureFonts().then(drawThumb);
+$('#btnThumbDl').onclick=()=>{drawThumb();try{const a=document.createElement('a');a.href=$('#thumb').toDataURL('image/png');a.download='thumbnail.png';a.click();}catch(e){toast('외부 이미지 보안 제한 — 업로드 이미지를 쓰세요');}};
+$('#btnMetaCopy').onclick=async()=>{await navigator.clipboard.writeText(buildMeta());toast('복사됨');};
+$('#btnSsamCopy').onclick=async()=>{await navigator.clipboard.writeText(buildSsam());toast('복사됨 → Claude 채팅에 붙여넣기');};
+function buildSrt(){const tl=buildTimeline();let n=1,o='';tl.scenes.forEach(sc=>sc.chunks.forEach(c=>{o+=`${n++}\n${srtTime(c.start)} --> ${srtTime(c.end)}\n${c.text}\n\n`;}));return o;}
+$('#btnSrt').onclick=()=>dl(new Blob([buildSrt()],{type:'text/plain'}),'captions.srt');
+
+/* ================= 저장 ================= */
+$('#btnSave').onclick=()=>{
+  const data={v:2,concept:S.concept,format:S.format,title:S.title,hooks:S.hooks,meta:S.meta,style:S.style,analysis:S.analysis,recreation:S.recreation,source:S.source,
+    form:{url:$('#inUrl').value,trans:$('#inTrans').value,topic:$('#inTopic').value,angle:$('#inAngle').value,len:$('#inLen').value,cps:$('#inCps').value,thumb:$('#inThumb').value},
+    scenes:S.scenes.map(s=>({text:s.text,emph:s.emph,direction:s.direction,beat:s.beat,keyword:s.keyword,chapter:s.chapter,sfx:s.sfx,stamp:s.stamp,imgSrc:s.imgSrc.startsWith('http')?s.imgSrc:''}))};
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(data,null,1)],{type:'application/json'}));a.download=`${(S.title||'project').slice(0,30)}.json`;a.click();toast('저장됨 (녹음·업로드 파일은 미포함)');
+};
+$('#btnLoad').onclick=()=>$('#fileLoad').click();
+$('#fileLoad').onchange=async e=>{
+  const f=e.target.files[0];if(!f)return;try{
+    const d=JSON.parse(await f.text());if(d.concept)setConcept(d.concept);const seg=$(`#segFormat div[data-v="${d.format}"]`);if(seg)seg.click();
+    S.title=d.title||'';S.hooks=d.hooks||[];S.meta=d.meta||S.meta;Object.assign(S.style,d.style||{});S.analysis=d.analysis||null;S.recreation=d.recreation||null;S.source=d.source||S.source;
+    const F=d.form||{};$('#inUrl').value=F.url||'';$('#inTrans').value=F.trans||'';$('#inTopic').value=F.topic||'';$('#inAngle').value=F.angle||'';if(F.len)$('#inLen').value=F.len;if(F.cps)$('#inCps').value=F.cps;$('#inThumb').value=F.thumb||'';
+    $('#stAcc').value=S.style.acc;$('#stDim').value=S.style.dim;$('#stGrain').value=S.style.grain;$('#stKen').value=S.style.ken;$('#stBurn').checked=S.style.burn;$('#stTop').checked=S.style.top;$('#stBar').checked=S.style.bar;$('#stSfx').checked=S.style.sfx;$('#stAmb').checked=S.style.amb;$('#stBgmVol').value=S.style.bgmVol;
+    S.scenes=(d.scenes||[]).map(x=>{const s=newScene(x);if(x.imgSrc)setSceneImg(s,x.imgSrc).then(()=>{renderScenes();drawStatic();});return s;});
+    renderAnalysis();renderHooks();renderScenes();drawStatic();toast('불러옴');
+  }catch(err){toast('프로젝트 파일 오류');}e.target.value='';
+};
+
+/* ================= v3: 다운로드 ================= */
+function dl(blob,name){const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),60000);}
+function fileBase(){return `${(S.title||'video').replace(/[\\/:*?"<>|]/g,'').replace(/\s+/g,'_').slice(0,40)}_${S.concept}_${S.format}`;}
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+const yieldNow=()=>new Promise(r=>{const c=new MessageChannel();c.port1.onmessage=()=>r();c.port2.postMessage(0);});
+
+/* ================= v3: Gemini TTS ================= */
+/* Gemini 호출: AQ.(신형)·AIza(구형) 키 모두 지원 — 헤더 인증 실패 시 ?key= 방식으로 재시도 */
+async function gfetch(model,payload){
+  const key=$('#inGKey').value.trim();const base=`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`;
+  const opt={method:'POST',headers:{'Content-Type':'application/json','x-goog-api-key':key},body:JSON.stringify(payload)};
+  let r=await fetch(base,opt);
+  if(r.status===401||r.status===403){const r2=await fetch(base+'?key='+encodeURIComponent(key),{method:'POST',headers:{'Content-Type':'application/json'},body:opt.body});if(r2.ok||r2.status!==r.status)return r2;}
+  return r;
+}
+
+function b64ToBytes(b){const s=atob(b);const u=new Uint8Array(s.length);for(let i=0;i<s.length;i++)u[i]=s.charCodeAt(i);return u;}
+function pcmToBuffer(bytes,rate){const n=bytes.length>>1;const buf=AC().createBuffer(1,Math.max(1,n),rate);const d=buf.getChannelData(0);const dv=new DataView(bytes.buffer,bytes.byteOffset,bytes.byteLength);for(let i=0;i<n;i++)d[i]=dv.getInt16(i*2,true)/32768;return buf;}
+function retrySec(j){const d=(j&&j.error&&j.error.details||[]).find(x=>x.retryDelay);return d?parseFloat(d.retryDelay)||0:0;}
+async function ttsText(line,onWait){
+  const key=$('#inGKey').value.trim();if(!key)throw new Error('Gemini API 키가 없습니다 (자동화 패널에 입력)');
+  const model=$('#inTModel').value.trim()||'gemini-3.1-flash-tts-preview';const C=CP();
+  const voice=$('#inVoice').value.trim()||C.voice;
+  const text=$('#chkStyleTTS').checked?`Read the following Korean narration ${C.ttsStyle}: ${line}`:line;
+  for(let attempt=0;attempt<7;attempt++){
+    let r,j={};
+    try{r=await gfetch(model,{contents:[{parts:[{text}]}],generationConfig:{responseModalities:['AUDIO'],speechConfig:{voiceConfig:{prebuiltVoiceConfig:{voiceName:voice}}}}});
+      j=await r.json().catch(()=>({}));}catch(e){r={ok:false,status:0};}
+    if(!r.ok&&(r.status===429||r.status>=500||r.status===0)){const w=Math.min(65,retrySec(j)||6*2**attempt);if(onWait)onWait(w);await sleep(w*1000);continue;}
+    if(!r.ok)throw new Error('TTS '+r.status+': '+(j.error&&j.error.message||'')+(r.status===401?' — AI Studio에서 키를 새로 만들어 다시 넣어보세요':''));
+    const part=(j.candidates&&j.candidates[0]&&j.candidates[0].content&&j.candidates[0].content.parts||[]).find(p=>p.inlineData);
+    if(!part)throw new Error('TTS 응답에 오디오가 없습니다 (모델명 확인)');
+    const mime=part.inlineData.mimeType||'';const bytes=b64ToBytes(part.inlineData.data);
+    if(/wav|mpeg|mp3|ogg|webm/.test(mime))return await AC().decodeAudioData(bytes.buffer.slice(0));
+    return pcmToBuffer(bytes,+((mime.match(/rate=(\d+)/)||[])[1]||24000));
+  }
+  throw new Error('TTS 한도 초과 — 잠시 후 다시 실행하세요');
+}
+async function ttsScene(s,onWait){
+  const line=s.text.replace(/\s*\/\s*/g,'… ').replace(/\s+/g,' ').trim();
+  let buf=await ttsText(line,onWait);buf=trimSilence(buf,0.008);return buf;
+}
+async function ttsAll(onP){
+  const todo=S.scenes.filter(s=>!s.audioBuf);let i=0;
+  for(const s of todo){i++;if(abortFlag)throw new Error('중단됨');
+    if(onP)onP((i-1)/todo.length,`음성 ${i}/${todo.length}`);
+    s.audioBuf=await ttsScene(s,w=>onP&&onP((i-1)/todo.length,`무료 한도 대기 ${Math.round(w)}초 (음성 ${i}/${todo.length})`));s.audioName='TTS';
+    updateSum();}
+  renderScenes();drawStatic();return todo.length;
+}
+$('#btnTestTTS').onclick=async()=>{
+  try{toast('음성 생성 중...');const buf=await ttsText(CP().name==='미제사건'?'1991년 3월 26일, 다섯 명의 아이가 산으로 향했다.':CP().name==='역경 극복'?'그날, 그는 마지막 남은 만 원으로 버스표를 샀다.':'할머니는 그 편지를 끝내 부치지 않았다.');
+    const ac=AC();const src=ac.createBufferSource();src.buffer=buf;src.connect(ac.destination);src.start();toast(`재생 중 (${buf.duration.toFixed(1)}초) — 톤 지시가 읽히면 체크 해제`);}
+  catch(e){toast(e.message);}
+};
+$('#btnAutoTTS').onclick=async()=>{try{const n=await ttsAll((p,m)=>{$('#sceneSum').textContent=m;});toast(`음성 ${n}개 생성`);}catch(e){toast(e.message);}};
+
+/* ================= v3: 오프라인 MP4 인코딩 (WebCodecs + mp4-muxer) ================= */
+let abortFlag=false;
+async function exportMP4(onP){
+  if(!('VideoEncoder' in window)||!('AudioEncoder' in window))throw new Error('WebCodecs 미지원 — Chrome/Edge 최신 버전을 쓰세요');
+  if(!window.Mp4Muxer)throw new Error('mp4-muxer 로드 실패');
+  stopPlay();await ensureFonts();
+  const tl=buildTimeline();if(!tl.scenes.length)throw new Error('씬이 없습니다');
+  const [W,H]=dims();cv.width=W;cv.height=H;const fps=30;const T=tl.total+0.4;const N=Math.ceil(T*fps);
+  const sr=48000;onP&&onP(0,'오디오 믹싱');
+  const oac=new OfflineAudioContext(2,Math.ceil(T*sr),sr);scheduleAudio(oac,oac.destination,tl,0);const mix=await oac.startRendering();
+  let vcfg=null;
+  for(const c of ['avc1.640034','avc1.640033','avc1.640032','avc1.4d0034','avc1.4d0033','avc1.42003e']){
+    const cfg={codec:c,width:W,height:H,bitrate:S.format==='short'?10e6:12e6,framerate:fps};
+    try{if((await VideoEncoder.isConfigSupported(cfg)).supported){vcfg=cfg;break;}}catch(e){}}
+  if(!vcfg)throw new Error('이 브라우저에 H.264 인코더가 없습니다 — Chrome/Edge 사용');
+  let acfg=null,acodec=null;
+  for(const [c,m] of [['mp4a.40.2','aac'],['opus','opus']]){const cfg={codec:c,sampleRate:sr,numberOfChannels:2,bitrate:192000};
+    try{if((await AudioEncoder.isConfigSupported(cfg)).supported){acfg=cfg;acodec=m;break;}}catch(e){}}
+  const target=new Mp4Muxer.ArrayBufferTarget();
+  const muxer=new Mp4Muxer.Muxer({target,video:{codec:'avc',width:W,height:H,frameRate:fps},
+    audio:acfg?{codec:acodec,numberOfChannels:2,sampleRate:sr}:undefined,fastStart:'in-memory',firstTimestampBehavior:'offset'});
+  let encErr=null;
+  const ve=new VideoEncoder({output:(c,m)=>muxer.addVideoChunk(c,m),error:e=>{encErr=e;}});ve.configure({...vcfg,avc:{format:'avc'}});
+  let ae=null;
+  if(acfg){ae=new AudioEncoder({output:(c,m)=>muxer.addAudioChunk(c,m),error:e=>{encErr=e;}});ae.configure(acfg);
+    const L=mix.getChannelData(0),R=mix.getChannelData(1),CH=4096;
+    for(let i=0;i<mix.length;i+=CH){const n=Math.min(CH,mix.length-i);const d=new Float32Array(n*2);d.set(L.subarray(i,i+n),0);d.set(R.subarray(i,i+n),n);
+      const ad=new AudioData({format:'f32-planar',sampleRate:sr,numberOfFrames:n,numberOfChannels:2,timestamp:Math.round(i/sr*1e6),data:d});ae.encode(ad);ad.close();}}
+  for(let f=0;f<N;f++){
+    if(encErr)throw encErr;if(abortFlag)throw new Error('중단됨');
+    const t=f/fps;drawFrame(cx,W,H,tl,Math.min(t,tl.total));
+    const vf=new VideoFrame(cv,{timestamp:Math.round(t*1e6),duration:Math.round(1e6/fps)});ve.encode(vf,{keyFrame:f%(fps*2)===0});vf.close();
+    while(ve.encodeQueueSize>6)await new Promise(r=>{ve.addEventListener('dequeue',r,{once:true});setTimeout(r,40);});
+    if(f%10===0){onP&&onP(f/N,`MP4 인코딩 ${Math.round(f/N*100)}%`);await yieldNow();}
+  }
+  await ve.flush();if(ae)await ae.flush();if(encErr)throw encErr;muxer.finalize();
+  onP&&onP(1,`완료${acodec?'':' (오디오 인코더 없음 — 무음)'}`);
+  return new Blob([target.buffer],{type:'video/mp4'});
+}
+$('#btnExport').onclick=async()=>{
+  const b=$('#btnExport');b.disabled=true;abortFlag=false;
+  try{const blob=await exportMP4((p,m)=>{$('#progBar').style.width=(p*100)+'%';$('#renderMsg').textContent=m;});
+    const name=fileBase()+'.mp4';lastVideoName=name;const url=URL.createObjectURL(blob);
+    $('#dlArea').innerHTML=`<a href="${url}" download="${escapeHtml(name)}"><button class="pri">⬇ ${escapeHtml(name)} (${(blob.size/1e6).toFixed(1)}MB)</button></a>`;dl(blob,name);}
+  catch(e){$('#renderMsg').textContent='실패: '+e.message;toast(e.message);}
+  b.disabled=false;
+};
+
+/* ================= v3: Claude 조종용 API ================= */
+const RUN={stage:'idle',progress:0,message:'',done:false,error:null,files:[],startedAt:0};
+function setRun(o){Object.assign(RUN,o);$('#autoStatus').textContent=`${RUN.stage}${RUN.message?' · '+RUN.message:''}`;$('#autoBar').style.width=(clamp(RUN.progress,0,1)*100)+'%';}
+async function autoRun(opts={}){
+  abortFlag=false;Object.assign(RUN,{stage:'start',progress:0,message:'',done:false,error:null,files:[],startedAt:Date.now(),finish:opts.finish||'engine'});
+  const saved={burn:S.style.burn,sfx:S.style.sfx,top:S.style.top};
+  if(opts.finish==='ssamcut'){S.style.burn=false;S.style.sfx=false;S.style.top=false;}
+  try{
+    if(!S.scenes.length)throw new Error('대본이 없습니다 — STUDIO.load(plan) 먼저');
+    if(opts.images!==false){setRun({stage:'images',message:'배경 이미지'});
+      try{const c=await autoFillImages((p,m)=>setRun({progress:p*0.2,message:m||''}));RUN.images=c;}catch(e){setRun({message:'이미지 실패: '+e.message});}}
+    if(opts.tts!==false){setRun({stage:'tts',progress:0.2});await ttsAll((p,m)=>setRun({progress:0.2+p*0.3,message:m}));}
+    runChecks();
+    setRun({stage:'render',progress:0.5,message:'MP4 인코딩'});
+    const blob=await exportMP4((p,m)=>setRun({progress:0.5+p*0.48,message:m}));
+    const base=fileBase();lastVideoName=base+'.mp4';const files=[];
+    dl(blob,base+'.mp4');files.push(`${base}.mp4 (${(blob.size/1e6).toFixed(1)}MB)`);
+    if(opts.extras!==false){
+      await sleep(600);drawThumb();const png=await new Promise(r=>$('#thumb').toBlob(r,'image/png'));if(png){dl(png,base+'_thumbnail.png');files.push(base+'_thumbnail.png');}
+      await sleep(600);dl(new Blob([buildMeta()+'\n\n■ 자막 (SRT)\n'+buildSrt()],{type:'text/plain'}),base+'_업로드정보.txt');files.push(base+'_업로드정보.txt');
+    }
+    RUN.videoFile=base+'.mp4';
+    setRun({stage:'done',progress:1,done:true,message:`완료 (${Math.round((Date.now()-RUN.startedAt)/1000)}초)`,files});
+  }catch(e){setRun({stage:'error',done:true,error:String(e&&e.message||e),message:String(e&&e.message||e)});}
+  finally{if(opts.finish==='ssamcut'){Object.assign(S.style,saved);drawStatic();}}
+  return JSON.parse(JSON.stringify(RUN));
+}
+$('#btnAutoRun').onclick=()=>autoRun();
+window.STUDIO=Object.freeze({
+  version:'3.0',
+  ready(){return {geminiKey:!!$('#inGKey').value.trim(),imageMode:$('#inImgMode').value,aiImage:aiImgDisabled?('불가: '+aiImgReason):'미확인/가능',ttsModel:$('#inTModel').value,webcodecs:'VideoEncoder' in window,muxer:!!window.Mp4Muxer,concepts:Object.keys(CONCEPTS),busy:!RUN.done&&RUN.stage!=='idle'};},
+  load(plan,opts={}){
+    if(opts.concept&&CONCEPTS[opts.concept])setConcept(opts.concept);
+    if(opts.format&&opts.format!==S.format){const seg=$(`#segFormat div[data-v="${opts.format}"]`);if(seg)seg.click();}
+    if(opts.len)$('#inLen').value=opts.len;
+    if(opts.sourceUrl){$('#inUrl').value=opts.sourceUrl;S.source.url=normUrl(opts.sourceUrl)||opts.sourceUrl;}
+    if(opts.sourceTitle)S.source.title=opts.sourceTitle;
+    if(opts.transcript)$('#inTrans').value=opts.transcript;
+    if(opts.angle)$('#inAngle').value=opts.angle;
+    applyResult(typeof plan==='string'?JSON.parse(plan):plan);
+    Object.assign(RUN,{stage:'loaded',done:false,error:null,progress:0,message:''});
+    return {scenes:S.scenes.length,estSeconds:+buildTimeline().total.toFixed(1),concept:S.concept,format:S.format};
+  },
+  start(opts){if(!RUN.done&&!['idle','loaded'].includes(RUN.stage))return 'already-running';autoRun(opts||{});return 'started';},
+  status(){return JSON.parse(JSON.stringify(RUN));},
+  checks(){runChecks();return [...$('#checks').children].map(d=>d.textContent);},
+  meta(){return buildMeta();},
+  qa(){return qaReport();},
+  cues(){const tl=buildTimeline();const r2=x=>+x.toFixed(2);
+    return {title:S.title,concept:S.concept,format:S.format,total:r2(tl.total),videoFile:RUN.videoFile||lastVideoName||'',
+      captions:tl.scenes.flatMap(sc=>sc.chunks.map(c=>({start:r2(c.start),end:r2(c.end),text:c.text}))),
+      sfx:tl.scenes.filter(sc=>sc.s.sfx&&sc.s.sfx!=='none').map(sc=>({time:r2(sc.start),type:sc.s.sfx,scene:sc.i+1})),
+      emphasis:tl.scenes.filter(sc=>(sc.s.emph||[]).length).map(sc=>({time:r2(sc.start),end:r2(sc.end),words:sc.s.emph,scene:sc.i+1})),
+      chapters:tl.scenes.filter(sc=>sc.s.chapter).map(sc=>({time:r2(sc.start),title:sc.s.chapter})),
+      stamps:tl.scenes.filter(sc=>sc.s.stamp).map(sc=>({time:r2(sc.start),end:r2(sc.end),text:sc.s.stamp})),
+      hookEnd:tl.scenes[0]?r2(tl.scenes[0].end):0};},
+  seek(t){const tl=buildTimeline();$('#seek').value=clamp(+t||0,0,tl.total);drawStatic();document.querySelector('#cv').scrollIntoView({block:'center'});return {t:+$('#seek').value,total:+tl.total.toFixed(1)};},
+  retts(scenes,opts={}){if(opts.style===false)$('#chkStyleTTS').checked=false;if(opts.style===true)$('#chkStyleTTS').checked=true;(scenes||[]).forEach(n=>{const sc=S.scenes[n-1];if(sc)sc.audioBuf=null;});updateSum();return {cleared:(scenes||[]).length,style:$('#chkStyleTTS').checked};},
+  reimage(scenes,mode){if(mode)$('#inImgMode').value=mode;(scenes||[]).forEach(n=>{const sc=S.scenes[n-1];if(sc){sc.img=null;sc.imgSrc='';sc.credit='';sc.imgSource='';}});return {cleared:(scenes||[]).length,mode:$('#inImgMode').value};},
+  editScene(n,patch){const sc=S.scenes[n-1];if(!sc)return 'no-scene';const tchg=patch.text!==undefined&&patch.text!==sc.text;Object.assign(sc,patch);if(tchg)sc.audioBuf=null;renderScenes();drawStatic();return {scene:n,audioReset:tchg};},
+  abort(){abortFlag=true;return 'aborting';}
+});
+
+renderConcepts();ensureFonts().then(drawStatic);drawStatic();
+</script>
+</body>
+</html>
